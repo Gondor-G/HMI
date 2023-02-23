@@ -271,3 +271,6 @@ void MainWindow::getNewFrame()
 {
 
 }
+
+
+
