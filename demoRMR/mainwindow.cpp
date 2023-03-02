@@ -59,6 +59,32 @@ void MainWindow::paintEvent(QPaintEvent *event)
         std::cout<<actIndex<<std::endl;
         QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
+
+        //TODO tu treba dopisat ten prepocet z lidaru na kameru a nejake varovania o vzdialenosti lidar je v mm ja budem pocitat v cm aj konstanty buduv cm
+
+        double f = 681.743;
+        double Zd = -14.5;
+        double Z = 21.0;
+        double Yd = 11.5;
+
+//        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+//        {
+//            double D = copyOfLaserData.Data[k].scanDistance/10;
+//            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+//            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+
+//            double xobr = frame[actIndex].cols
+
+////            int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+////            int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
+////            int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
+////            if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+////                painter.drawEllipse(QPoint(xp, yp),2,2);
+//        }
+
+
+
+
     }
     else
     {
