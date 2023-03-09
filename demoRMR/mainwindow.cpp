@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
+//#include <opencv2>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -58,6 +59,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     {
         std::cout<<actIndex<<std::endl;
         QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
+//        Circle(image, (50,50),10,(255,255,255), 8,0);
         painter.drawImage(rect,image.rgbSwapped());
 
         //TODO tu treba dopisat ten prepocet z lidaru na kameru a nejake varovania o vzdialenosti lidar je v mm ja budem pocitat v cm aj konstanty buduv cm
@@ -67,20 +69,21 @@ void MainWindow::paintEvent(QPaintEvent *event)
         double Z = 21.0;
         double Yd = 11.5;
 
-//        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
-//        {
-//            double D = copyOfLaserData.Data[k].scanDistance/10;
-//            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
-//            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+        {
+            double D = copyOfLaserData.Data[k].scanDistance/10;
+            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
 
-//            double xobr = frame[actIndex].cols
+            double xobr = (frame[actIndex].cols / 2) - ((f * Y) / (X + Zd));
+            double yobr = (frame[actIndex].rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
 
-////            int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
-////            int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
-////            int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
-////            if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-////                painter.drawEllipse(QPoint(xp, yp),2,2);
-//        }
+//            if(rect.contains(int (xobr),int (yobr)))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+            if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
+            {
+                painter.drawEllipse(QPoint(int (xobr) + rect.topLeft().x(), int (yobr) + rect.topLeft().y()),2,2);
+            }
+        }
 
 
 
