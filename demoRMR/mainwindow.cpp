@@ -3,6 +3,9 @@
 #include <QPainter>
 #include <math.h>
 //#include <opencv2>
+#include<iostream>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -11,6 +14,8 @@
 /// AZ POTOM ZACNI ROBIT... AK TO NESPRAVIS, POJDU BODY DOLE... A NIE JEDEN,ALEBO DVA ALE BUDES RAD
 /// AK SA DOSTANES NA SKUSKU
 
+using namespace cv;
+using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -58,11 +63,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
         std::cout<<actIndex<<std::endl;
-        QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
-//        Circle(image, (50,50),10,(255,255,255), 8,0);
-        painter.drawImage(rect,image.rgbSwapped());
-
-        //TODO tu treba dopisat ten prepocet z lidaru na kameru a nejake varovania o vzdialenosti lidar je v mm ja budem pocitat v cm aj konstanty buduv cm
 
         double f = 681.743;
         double Zd = -14.5;
@@ -78,12 +78,121 @@ void MainWindow::paintEvent(QPaintEvent *event)
             double xobr = (frame[actIndex].cols / 2) - ((f * Y) / (X + Zd));
             double yobr = (frame[actIndex].rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
 
-//            if(rect.contains(int (xobr),int (yobr)))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+            Point center(xobr, yobr);
+            Point robot_center(400, 400);
+            int b,g,r = 0;
+
             if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
             {
-                painter.drawEllipse(QPoint(int (xobr) + rect.topLeft().x(), int (yobr) + rect.topLeft().y()),2,2);
+                if(D <= 50){//TODO pridat senzor detekcie vzdialenpsti z bokov
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(frame[actIndex], center, 1,line_Color, 2);
+            }
+
+            if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+            }
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+            }
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 328.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
             }
         }
+
+        QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
+        painter.drawImage(rect,image.rgbSwapped());
+
+
+//        double f = 681.743;
+//        double Zd = -14.5;
+//        double Z = 21.0;
+//        double Yd = 11.5;
+
+//        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+//        {
+//            double D = copyOfLaserData.Data[k].scanDistance/10;
+//            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+//            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+
+//            double xobr = (frame[actIndex].cols / 2) - ((f * Y) / (X + Zd));
+//            double yobr = (frame[actIndex].rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
+
+////            if(rect.contains(int (xobr),int (yobr)))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+//            if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
+//            {
+//                painter.drawEllipse(QPoint(int (xobr) + rect.topLeft().x(), int (yobr) + rect.topLeft().y()),2,2);
+//            }
+//        }
 
 
 
