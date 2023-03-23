@@ -62,6 +62,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
+        //cv::Mat clone_frame = cv::Mat::clone(frame[actIndex]);
+        cv::Mat clone_frame = frame[actIndex].clone();
+
         std::cout<<actIndex<<std::endl;
 
         double f = 681.743;
@@ -75,8 +78,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
             double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
             double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
 
-            double xobr = (frame[actIndex].cols / 2) - ((f * Y) / (X + Zd));
-            double yobr = (frame[actIndex].rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
+            double xobr = (clone_frame.cols / 2) - ((f * Y) / (X + Zd));
+            double yobr = (clone_frame.rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
 
             Point center(xobr, yobr);
             Point robot_center(425, 400);
@@ -88,8 +91,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
             int b,g,r = 0;
 
             if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
-            {
-                if(D <= 50){//TODO pridat senzor detekcie vzdialenpsti z bokov
+            { // front
+                if(D <= 50){
                     b = 0;
                     g = 0;
                     r = 255;
@@ -106,10 +109,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 }
 
                 Scalar line_Color(b, g, r);
-                cv::circle(frame[actIndex], center, 1,line_Color, 2);
+                cv::circle(clone_frame, center, 1,line_Color, 2);
             }
-            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 92.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 72.0)//132-32
-//            if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 102.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 62.0)//132-32  left
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
             {
                 if(D <= 50){
                     b = 0;
@@ -128,12 +131,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 }
 
                 Scalar line_Color(b, g, r);
-                cv::circle(frame[actIndex], robot_center, 10,robot_Color, 2);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
 //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
-                cv::ellipse( frame[actIndex], robot_center_left, Size(15, 15), 0, 90.0/*start angle*/, 270.0/*end angle*/, line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_left, Size(15, 15), 0, 90.0/*start angle*/, 270.0/*end angle*/, line_Color, 2);
             }
-            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 188.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 172.0)//228-132
-//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 198.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 162.0)//228-132 back
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
             {
                 if(D <= 50){
                     b = 0;
@@ -152,12 +155,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 }
 
                 Scalar line_Color(b, g, r);
-                cv::circle(frame[actIndex], robot_center, 10,robot_Color, 2);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
 //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
-                cv::ellipse( frame[actIndex], robot_center_back, Size(15, 15), 0, 0.0/*start angle*/, 180.0/*end angle*/, line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_back, Size(15, 15), 0, 0.0/*start angle*/, 180.0/*end angle*/, line_Color, 2);
             }
-            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 288.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 268.0)//328-228
-//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 328.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 228.0)
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 298.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 258.0)//328-228 right
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 328.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 228.0)
             {
                 if(D <= 50){
                     b = 0;
@@ -176,13 +179,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 }
 
                 Scalar line_Color(b, g, r);
-                cv::circle(frame[actIndex], robot_center, 10,robot_Color, 2);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
 //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
-                cv::ellipse( frame[actIndex], robot_center_right, Size(15, 15), 0, 270.0/*start angle*/, 90.0+360/*end angle*/, line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_right, Size(15, 15), 0, 270.0/*start angle*/, 90.0+360/*end angle*/, line_Color, 2);
             }
         }
 
-        QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
+        QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
 
 
