@@ -65,7 +65,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
         //cv::Mat clone_frame = cv::Mat::clone(frame[actIndex]);
         cv::Mat clone_frame = frame[actIndex].clone();
 
-        std::cout<<actIndex<<std::endl;
+//        std::cout<<actIndex<<std::endl;
 
         double f = 681.743;
         double Zd = -14.5;
@@ -185,6 +185,27 @@ void MainWindow::paintEvent(QPaintEvent *event)
             }
         }
 
+        // Bateria graficka znacka.
+        int bateria = ((robotdata.Battery / 2.55) * 0.3) + 805;
+        if((robotdata.Battery / 2.55) <= 50.0 && (robotdata.Battery / 2.55) > 25.0){
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 200, 255), 10, 8);
+        }
+        else if((robotdata.Battery / 2.55) <= 25.0){
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 0, 255), 10, 8);
+        }
+        else{
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 255, 0), 10, 8);
+        }
+
+        cv::rectangle(clone_frame, Point(800, 10), Point(840, 30), Scalar(255, 0, 0), 2, 8);
+        cv::rectangle(clone_frame, Point(840, 18), Point(843, 22), Scalar(255, 0, 0), 2, 8);
+
+
+
+
+        cout<<"a = " << (int) robotdata.Battery << endl;
+
+
         QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
 
@@ -231,6 +252,9 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
+
+            unsigned char a = robotdata.Battery;
+            cout<<"a = " << (int)a << endl;
         }
     }
     if(updateSkeletonPicture==1 )
