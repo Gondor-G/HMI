@@ -58,7 +58,23 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QRect rect;
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
+
+    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
+    cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
+    cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
+    cout<<"y2 = " << (int) rect.bottom() << endl;  //defaul is: 611
+    cout<<"----------------------------" << endl;
+    cout<<"dlzka x = " << (int) rect.right() - rect.left() << endl;  //defaul is: 792
+    cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
+    cout<<"----------------------------" << endl;
+
+
+
+
+//    rect.setCoords(11, 128, 811, 628); // v takomto pomere to chcem mat 8 ku 5
+
     painter.drawRect(rect);
+
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
@@ -203,37 +219,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 
 
-        cout<<"a = " << (int) robotdata.Battery << endl;
+//        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
 
 
         QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
-
-
-//        double f = 681.743;
-//        double Zd = -14.5;
-//        double Z = 21.0;
-//        double Yd = 11.5;
-
-//        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
-//        {
-//            double D = copyOfLaserData.Data[k].scanDistance/10;
-//            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
-//            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
-
-//            double xobr = (frame[actIndex].cols / 2) - ((f * Y) / (X + Zd));
-//            double yobr = (frame[actIndex].rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
-
-////            if(rect.contains(int (xobr),int (yobr)))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-//            if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
-//            {
-//                painter.drawEllipse(QPoint(int (xobr) + rect.topLeft().x(), int (yobr) + rect.topLeft().y()),2,2);
-//            }
-//        }
-
-
-
-
     }
     else
     {
@@ -253,8 +243,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
 
-            unsigned char a = robotdata.Battery;
-            cout<<"a = " << (int)a << endl;
+//            unsigned char bateria = robotdata.Battery;
+//            cout<<"stav baterie 2 = " << (int)bateria << endl;
         }
     }
     if(updateSkeletonPicture==1 )
