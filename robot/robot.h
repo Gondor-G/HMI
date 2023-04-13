@@ -103,7 +103,8 @@ enum jointnames
    left_heel,
    righ_heel,
    left_foot_index,
-   right_foot_index
+   right_foot_index,
+    last
 };
 typedef struct
 {

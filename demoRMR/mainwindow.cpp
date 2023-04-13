@@ -11,6 +11,12 @@
 /// AK SA DOSTANES NA SKUSKU
 
 
+//int l_wrist_indexf;
+//int l_wrist_pinkyf;
+//int l_indexf_pinkyf;
+
+int angle_at_left_wrist;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -77,17 +83,37 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
+<<<<<<< Updated upstream
+=======
+
+            unsigned char a = robotdata.Battery;
+            //cout<<"a = " << (int)a << endl;
+>>>>>>> Stashed changes
         }
     }
     if(updateSkeletonPicture==1 )
     {
+        int joint_coords[73][2];
+
         painter.setPen(Qt::red);
-        for(int i=0;i<75;i++)
+        for(int joint = left_wrist; joint != last; joint++)
         {
-            int xp=rect.width()-rect.width() * skeleJoints.joints[i].x+rect.topLeft().x();
-            int yp= (rect.height() *skeleJoints.joints[i].y)+rect.topLeft().y();
-            if(rect.contains(xp,yp))
-                painter.drawEllipse(QPoint(xp, yp),2,2);
+            joint_coords[joint][0] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
+            joint_coords[joint][1] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
+
+            if(joint == left_thumb_tip && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+                painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),5,5);
+            else if(rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+                painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
+        }
+
+        if(rect.contains(joint_coords[left_wrist][0],joint_coords[left_wrist][1]) && rect.contains(joint_coords[left_index_tip][0],joint_coords[left_index_tip][1]) && rect.contains(joint_coords[left_pink_tip][0],joint_coords[left_pink_tip][1]))
+        {
+            int l_wrist_indexf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_index_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_index_tip][1])^2);
+            int l_wrist_pinkyf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_pink_tip][1])^2);
+            int l_indexf_pinkyf = sqrt((joint_coords[left_index_tip][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_index_tip][1] - joint_coords[left_pink_tip][1])^2);
+
+            angle_at_left_wrist = acos((l_wrist_indexf^2 + l_wrist_pinkyf^2 - l_indexf_pinkyf^2) / (2 * l_wrist_indexf * l_wrist_pinkyf));
         }
     }
 }
@@ -120,6 +146,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
     else
         robot.setTranslationSpeed(0);
+
+
+    cout << angle_at_left_wrist << endl;
+
+//    if(angle_at_left_wrist >= 45)
+//    {
+//        cout << "Forward" << angle_at_left_wrist << endl;
+//        robot.setTranslationSpeed(500);
+//    }
 
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
