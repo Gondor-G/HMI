@@ -59,6 +59,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
 
+    // vypisi rozmerov grafickeho okna
     cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
     cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
     cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
@@ -68,7 +69,38 @@ void MainWindow::paintEvent(QPaintEvent *event)
     cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
     cout<<"----------------------------" << endl;
 
+    int x2 = 811;
+    int y2 = 528;
 
+    for(int x=8 + 11,y=5 + 128;
+        x <= ((int) rect.right() - 5) &&
+        y <= ((int) rect.bottom() - 5);
+        x+=8,y+=5){
+
+        x2 = x;
+        y2 = y;
+//        cout<<"x2 = " << x2 << endl;  //defaul is: 803
+//        cout<<"y2 = " << y2 << endl;  //defaul is: 611
+    }
+
+    rect.setCoords(11, 128, x2, y2);
+
+//    int width = x2 - x1;
+//            int height = y2 - y1;
+
+//            int width_ratio = width/8;
+//            int height_ratio = height/5;
+
+//            if(width_ratio > height_ratio)
+//            {
+//                width = height_ratio*8;
+//                x2 = x1 + width;
+//            }
+//            else
+//            {
+//                height = width_ratio*5;
+//                y2 = y1 + height;
+//            }
 
 
 //    rect.setCoords(11, 128, 811, 628); // v takomto pomere to chcem mat 8 ku 5
@@ -243,8 +275,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
 
-//            unsigned char bateria = robotdata.Battery;
-//            cout<<"stav baterie 2 = " << (int)bateria << endl;
+
         }
     }
     if(updateSkeletonPicture==1 )
