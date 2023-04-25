@@ -58,7 +58,31 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QRect rect;
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
+
+    int x1 = 11, y1 = 128, x2 = rect.right(), y2 = rect.bottom();
+
+    int width = x2 - x1;
+    int height = y2 - y1;
+
+    int width_ratio = width/8;
+    int height_ratio = height/5;
+
+    if(width_ratio > height_ratio)
+    {
+        width = height_ratio*8;
+        x2 = x1 + width;
+    }
+    else
+    {
+        height = width_ratio*5;
+        y2 = y1 + height;
+    }
+
+    rect.setCoords(11,128,x2,y2);
+
     painter.drawRect(rect);
+
+
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
@@ -77,18 +101,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
          //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
-                int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+                int dist=copyOfLaserData.Data[k].scanDistance/30; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
                 int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
                 int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
-<<<<<<< Updated upstream
-=======
+
 
             unsigned char a = robotdata.Battery;
             //cout<<"a = " << (int)a << endl;
->>>>>>> Stashed changes
+
         }
     }
     if(updateSkeletonPicture==1 )
@@ -107,14 +130,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
         }
 
-        if(rect.contains(joint_coords[left_wrist][0],joint_coords[left_wrist][1]) && rect.contains(joint_coords[left_index_tip][0],joint_coords[left_index_tip][1]) && rect.contains(joint_coords[left_pink_tip][0],joint_coords[left_pink_tip][1]))
-        {
-            int l_wrist_indexf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_index_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_index_tip][1])^2);
-            int l_wrist_pinkyf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_pink_tip][1])^2);
-            int l_indexf_pinkyf = sqrt((joint_coords[left_index_tip][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_index_tip][1] - joint_coords[left_pink_tip][1])^2);
 
-            angle_at_left_wrist = acos((l_wrist_indexf^2 + l_wrist_pinkyf^2 - l_indexf_pinkyf^2) / (2 * l_wrist_indexf * l_wrist_pinkyf));
-        }
+
+
+//        if(rect.contains(joint_coords[left_wrist][0],joint_coords[left_wrist][1]) && rect.contains(joint_coords[left_index_tip][0],joint_coords[left_index_tip][1]) && rect.contains(joint_coords[left_pink_tip][0],joint_coords[left_pink_tip][1]))
+//        {
+//            int l_wrist_indexf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_index_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_index_tip][1])^2);
+//            int l_wrist_pinkyf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_pink_tip][1])^2);
+//            int l_indexf_pinkyf = sqrt((joint_coords[left_index_tip][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_index_tip][1] - joint_coords[left_pink_tip][1])^2);
+
+//            angle_at_left_wrist = acos((l_wrist_indexf^2 + l_wrist_pinkyf^2 - l_indexf_pinkyf^2) / (2 * l_wrist_indexf * l_wrist_pinkyf));
+//        }
     }
 }
 
