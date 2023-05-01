@@ -43,6 +43,8 @@ public:
     int actIndex;
     //    cv::Mat frame[3];
 
+    //bool isFistGesture(skeleton skeleJoints);
+
     cv::Mat frame[3];
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();

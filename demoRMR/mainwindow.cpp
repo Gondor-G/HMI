@@ -15,7 +15,82 @@
 //int l_wrist_pinkyf;
 //int l_indexf_pinkyf;
 
-int angle_at_left_wrist;
+//int** jointCoords;
+
+int** generateJointCoords(skeleton skeleJoints, QRect rect)
+{
+    int** jointCoords = new int*[2];
+
+    int axis = 0; //  X
+
+    for (int joint = left_wrist; joint != last; joint++) {
+        jointCoords[axis] = new int[73];
+        jointCoords[axis][joint] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
+//        cout << jointCoords[axis][joint] << ' ';
+    }
+
+    axis = 1; // Y
+
+    for (int joint = left_wrist; joint != last; joint++) {
+        jointCoords[axis] = new int[73];
+        jointCoords[axis][joint] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
+    }
+
+    return jointCoords;
+}
+
+bool isAboveHead_RIGHT(skeleton skeleJoints, QRect rect)
+{
+    return true;
+}
+
+bool isFistGesture(int** jointCoords)
+{
+    cout << "TESTING" << endl;
+//    int THUMB_TIP_X = jointCoords[0][right_thumb_tip];//rect.width()-rect.width() * skeleJoints.joints[right_thumb_tip].x+rect.topLeft().x();
+//    int THUMB_TIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_thumb_tip].y)+rect.topLeft().y();
+
+//    int INDEX_PIP_X = jointCoords[0][right_thumb_tip];//rect.width()-rect.width() * skeleJoints.joints[right_index_mcp].x+rect.topLeft().x();
+//    int INDEX_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_index_mcp].y)+rect.topLeft().y();
+
+//    int MIDDLE_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_middle_mcp].y)+rect.topLeft().y();
+//    int RING_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_ring_mcp].y)+rect.topLeft().y();
+//    int PINKY_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_pinky_mcp].y)+rect.topLeft().y();
+
+
+//    int INDEX_TIP_X = //rect.width()-rect.width() * skeleJoints.joints[right_index_tip].x+rect.topLeft().x();
+//    int INDEX_TIP_Y = //(rect.height() *skeleJoints.joints[right_index_tip].y)+rect.topLeft().y();
+
+//    int MIDDLE_TIP_Y = //(rect.height() *skeleJoints.joints[right_middle_tip].y)+rect.topLeft().y();
+//    int RING_TIP_Y = //(rect.height() *skeleJoints.joints[right_ring_tip].y)+rect.topLeft().y();
+//    int PINKY_TIP_Y = //(rect.height() *skeleJoints.joints[right_pinky_tip].y)+rect.topLeft().y();
+
+    //cout << "Thumb:" << jointCoords[1][right_thumb_tip] << "index_pip:" << jointCoords[1][right_index_mcp] << "index_tip:" << jointCoords[1][right_index_tip] << endl;
+
+    if(jointCoords[1][right_thumb_tip] > jointCoords[1][right_index_mcp] && jointCoords[1][right_thumb_tip] < jointCoords[1][right_index_tip] && jointCoords[0][right_thumb_tip] > jointCoords[0][right_index_tip] && jointCoords[0][right_thumb_tip] > jointCoords[0][right_index_mcp])
+    {
+        cout << "first" << endl;
+//        if(jointCoords[1][right_index_mcp] < jointCoords[1][right_index_tip])
+//        {
+//            cout << "second" << endl;
+//            if(jointCoords[1][right_middle_mcp] < jointCoords[1][right_middle_tip])
+//            {
+//                cout << "third" << endl;
+//                if(jointCoords[1][right_ring_mcp] < jointCoords[1][right_ring_tip])
+//                {
+//                    cout << "fourth" << endl;
+//                    if(jointCoords[1][right_pinky_mcp] < jointCoords[1][right_pinky_tip])
+//                    {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+        return true;
+    }
+
+    return false;
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -86,7 +161,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
-        std::cout<<actIndex<<std::endl;
+        //std::cout<<actIndex<<std::endl;
         QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
     }
@@ -124,12 +199,22 @@ void MainWindow::paintEvent(QPaintEvent *event)
             joint_coords[joint][0] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
             joint_coords[joint][1] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
 
-            if(joint == left_thumb_tip && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+            if(joint == left_index_mcp && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),5,5);
             else if(rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
         }
 
+        int** jointCoords = generateJointCoords(skeleJoints, rect);
+        cout << "coords set" << endl;
+//        if(isFistGesture(jointCoords))
+//        {
+//            cout << "FIST" << endl;
+//        }
+//        else
+//        {
+//            cout << "NO" << endl << endl;
+//        }
 
 
 
@@ -174,7 +259,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         robot.setTranslationSpeed(0);
 
 
-    cout << angle_at_left_wrist << endl;
+    //cout << angle_at_left_wrist << endl;
 
 //    if(angle_at_left_wrist >= 45)
 //    {
