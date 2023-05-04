@@ -2,6 +2,10 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
+//#include <opencv2>
+#include<iostream>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -10,6 +14,8 @@
 /// AZ POTOM ZACNI ROBIT... AK TO NESPRAVIS, POJDU BODY DOLE... A NIE JEDEN,ALEBO DVA ALE BUDES RAD
 /// AK SA DOSTANES NA SKUSKU
 
+using namespace cv;
+using namespace std;
 
 //int** generateJointCoords(skeleton skeleJoints, QRect rect)
 //{
@@ -193,35 +199,203 @@ void MainWindow::paintEvent(QPaintEvent *event)
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
 
-    int x1 = 11, y1 = 128, x2 = rect.right(), y2 = rect.bottom();
 
-    int width = x2 - x1;
-    int height = y2 - y1;
+    // vypisi rozmerov grafickeho okna
+    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
+    cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
+    cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
+    cout<<"y2 = " << (int) rect.bottom() << endl;  //defaul is: 611
+    cout<<"----------------------------" << endl;
+    cout<<"dlzka x = " << (int) rect.right() - rect.left() << endl;  //defaul is: 792
+    cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
+    cout<<"----------------------------" << endl;
 
-    int width_ratio = width/8;
-    int height_ratio = height/5;
+    int x2 = 811;
+    int y2 = 528;
 
-    if(width_ratio > height_ratio)
-    {
-        width = height_ratio*8;
-        x2 = x1 + width;
+    for(int x=8 + 11,y=5 + 128;
+        x <= ((int) rect.right() - 5) &&
+        y <= ((int) rect.bottom() - 5);
+        x+=8,y+=5){
+
+        x2 = x;
+        y2 = y;
+//        cout<<"x2 = " << x2 << endl;  //defaul is: 803
+//        cout<<"y2 = " << y2 << endl;  //defaul is: 611
     }
-    else
-    {
-        height = width_ratio*5;
-        y2 = y1 + height;
-    }
 
-    rect.setCoords(11,128,x2,y2);
+    rect.setCoords(11, 128, x2, y2);
+
+//    int width = x2 - x1;
+//            int height = y2 - y1;
+
+//            int width_ratio = width/8;
+//            int height_ratio = height/5;
+
+//            if(width_ratio > height_ratio)
+//            {
+//                width = height_ratio*8;
+//                x2 = x1 + width;
+//            }
+//            else
+//            {
+//                height = width_ratio*5;
+//                y2 = y1 + height;
+//            }
+
+
+//    rect.setCoords(11, 128, 811, 628); // v takomto pomere to chcem mat 8 ku 5
 
     painter.drawRect(rect);
 
 
-
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
-        //std::cout<<actIndex<<std::endl;
-        QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
+        //cv::Mat clone_frame = cv::Mat::clone(frame[actIndex]);
+        cv::Mat clone_frame = frame[actIndex].clone();
+
+//        std::cout<<actIndex<<std::endl;
+
+        double f = 681.743;
+        double Zd = -14.5;
+        double Z = 21.0;
+        double Yd = 11.5;
+
+        for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+        {
+            double D = copyOfLaserData.Data[k].scanDistance/10;
+            double X = D*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+            double Y = D*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0);
+
+            double xobr = (clone_frame.cols / 2) - ((f * Y) / (X + Zd));
+            double yobr = (clone_frame.rows / 2) + ((f * (-Z + Yd)) / (X + Zd));
+
+            Point center(xobr, yobr);
+            Point robot_center(425, 400);
+            Point robot_center_right(445, 400);
+            Point robot_center_left(405, 400);
+            Point robot_center_back(425, 420);
+            Scalar robot_Color(255, 0, 0);
+
+            int b,g,r = 0;
+
+            if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
+            { // front
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(clone_frame, center, 1,line_Color, 2);
+            }
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 102.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 62.0)//132-32  left
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
+//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_left, Size(15, 15), 0, 90.0/*start angle*/, 270.0/*end angle*/, line_Color, 2);
+            }
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 198.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 162.0)//228-132 back
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
+//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_back, Size(15, 15), 0, 0.0/*start angle*/, 180.0/*end angle*/, line_Color, 2);
+            }
+//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 298.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 258.0)//328-228 right
+            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 328.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 228.0)
+            {
+                if(D <= 50){
+                    b = 0;
+                    g = 0;
+                    r = 255;
+                }
+                else if(D > 50 && D <= 100){
+                    b = 0;
+                    g = 200;
+                    r = 255;
+                }
+                else if(D > 100){
+                    b = 0;
+                    g = 255;
+                    r = 0;
+                }
+
+                Scalar line_Color(b, g, r);
+                cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
+//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+                cv::ellipse(clone_frame, robot_center_right, Size(15, 15), 0, 270.0/*start angle*/, 90.0+360/*end angle*/, line_Color, 2);
+            }
+        }
+
+        // Bateria graficka znacka.
+        int bateria = ((robotdata.Battery / 2.55) * 0.3) + 805;
+        if((robotdata.Battery / 2.55) <= 50.0 && (robotdata.Battery / 2.55) > 25.0){
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 200, 255), 10, 8);
+        }
+        else if((robotdata.Battery / 2.55) <= 25.0){
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 0, 255), 10, 8);
+        }
+        else{
+            cv::rectangle(clone_frame, Point(805, 15), Point(bateria, 25), Scalar(0, 255, 0), 10, 8);
+        }
+
+        cv::rectangle(clone_frame, Point(800, 10), Point(840, 30), Scalar(255, 0, 0), 2, 8);
+        cv::rectangle(clone_frame, Point(840, 18), Point(843, 22), Scalar(255, 0, 0), 2, 8);
+
+
+
+
+//        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
+
+
+        QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
     }
     else
@@ -241,11 +415,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
-
-
-            unsigned char a = robotdata.Battery;
-            //cout<<"a = " << (int)a << endl;
-
         }
     }
     if(updateSkeletonPicture==1 )
