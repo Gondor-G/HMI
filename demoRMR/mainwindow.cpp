@@ -198,56 +198,89 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QRect rect;
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
+    QRect rect2;
+    rect2= ui->frame_2->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
+    rect2.translate(0,15);
 
 
     // vypisi rozmerov grafickeho okna
-    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
-    cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
-    cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
-    cout<<"y2 = " << (int) rect.bottom() << endl;  //defaul is: 611
-    cout<<"----------------------------" << endl;
-    cout<<"dlzka x = " << (int) rect.right() - rect.left() << endl;  //defaul is: 792
-    cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
-    cout<<"----------------------------" << endl;
+//    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
+//    cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
+//    cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
+//    cout<<"y2 = " << (int) rect.bottom() << endl;  //defaul is: 611
+//    cout<<"----------------------------" << endl;
+//    cout<<"dlzka x = " << (int) rect.right() - rect.left() << endl;  //defaul is: 792
+//    cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
+//    cout<<"----------------------------" << endl;
 
-    int x2 = 811;
-    int y2 = 528;
+//    for(int x=8 + 11,y=5 + 128;
+//        x <= ((int) rect.right() - 5) &&
+//        y <= ((int) rect.bottom() - 5);
+//        x+=8,y+=5){
 
-    for(int x=8 + 11,y=5 + 128;
-        x <= ((int) rect.right() - 5) &&
-        y <= ((int) rect.bottom() - 5);
-        x+=8,y+=5){
+//        x2 = x;
+//        y2 = y;
+////        cout<<"x2 = " << x2 << endl;  //defaul is: 803
+////        cout<<"y2 = " << y2 << endl;  //defaul is: 611
+//    }
 
-        x2 = x;
-        y2 = y;
-//        cout<<"x2 = " << x2 << endl;  //defaul is: 803
-//        cout<<"y2 = " << y2 << endl;  //defaul is: 611
+    // main rectangle
+    int x1 = 11;
+    int y1 = 128;
+    int x2 = rect.right();
+    int y2 = rect.bottom();
+
+    int width = x2 - x1;
+    int height = y2 - y1;
+
+    int width_ratio = width/8;
+    int height_ratio = height/5;
+
+    if(width_ratio > height_ratio)
+    {
+        width = height_ratio*8;
+        x2 = x1 + width;
     }
+    else
+    {
+        height = width_ratio*5;
+        y2 = y1 + height;
+    }
+
 
     rect.setCoords(11, 128, x2, y2);
 
-//    int width = x2 - x1;
-//            int height = y2 - y1;
-
-//            int width_ratio = width/8;
-//            int height_ratio = height/5;
-
-//            if(width_ratio > height_ratio)
-//            {
-//                width = height_ratio*8;
-//                x2 = x1 + width;
-//            }
-//            else
-//            {
-//                height = width_ratio*5;
-//                y2 = y1 + height;
-//            }
-
-
-//    rect.setCoords(11, 128, 811, 628); // v takomto pomere to chcem mat 8 ku 5
-
     painter.drawRect(rect);
 
+    // secondary rectangle
+    int x11 = 11, y11 = 128, x22 = rect2.right(), y22 = rect2.bottom();
+
+    int width2 = x22 - x11;
+    int height2 = y22 - y11;
+
+    int width_ratio2 = width2/8;
+    int height_ratio2 = height2/5;
+
+    if(width_ratio2 > height_ratio2)
+    {
+        width2 = height_ratio2*8;
+        x22 = x11 + width2;
+    }
+    else
+    {
+        height2 = width_ratio2*5;
+        y22 = y11 + height2;
+    }
+
+    rect2.setCoords(11, 128, x22, y22);
+
+    painter.drawRect(rect2);
+
+
+
+
+
+    cv::Mat clone_frame = frame[actIndex].clone();
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
@@ -300,7 +333,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, center, 1,line_Color, 2);
             }
-//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 102.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 62.0)//132-32  left
+    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 102.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 62.0)//132-32  left
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
             {
                 if(D <= 50){
@@ -321,10 +354,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_left, Size(15, 15), 0, 90.0/*start angle*/, 270.0/*end angle*/, line_Color, 2);
             }
-//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 198.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 162.0)//228-132 back
+    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 198.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 162.0)//228-132 back
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
             {
                 if(D <= 50){
@@ -345,10 +378,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_back, Size(15, 15), 0, 0.0/*start angle*/, 180.0/*end angle*/, line_Color, 2);
             }
-//            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 298.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 258.0)//328-228 right
+    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 298.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 258.0)//328-228 right
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 328.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 228.0)
             {
                 if(D <= 50){
@@ -369,7 +402,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-//                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
+    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_right, Size(15, 15), 0, 270.0/*start angle*/, 90.0+360/*end angle*/, line_Color, 2);
             }
         }
@@ -392,14 +425,13 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 
 
-//        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
+    //        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
 
 
         QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
     }
-    else
-    {
+    if(useCamera1==true && actIndex>-1){
         if(updateLaserPicture==1) ///ak mam nove data z lidaru
         {
             updateLaserPicture=0;
@@ -409,10 +441,16 @@ void MainWindow::paintEvent(QPaintEvent *event)
          //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
-                int dist=copyOfLaserData.Data[k].scanDistance/30; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
-                int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
-                int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
-                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+
+//                int diag = (sqrt(pow(((int) rect2.right() - (int) rect2.left()), 2) + pow(((int) rect2.bottom() - (int) rect2.top()), 2)));
+//                diag = ((((int) (-diag / 100) * 5) + 100) / 5) + 15;
+//                cout<<"diag = " << diag << endl;
+
+                int dist=copyOfLaserData.Data[k].scanDistance/80;//diag //vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+                int xp=rect2.width()-(rect2.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().x(); //prepocet do obrazovky
+                int yp=rect2.height()-(rect2.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().y();//prepocet do obrazovky
+                if(rect2.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
         }
@@ -606,7 +644,6 @@ void MainWindow::on_pushButton_9_clicked() //start button
             if(/*js==0 &&*/ axis==0){rotationspeed=-value*(3.14159/2.0);}}
     );
 }
-
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
