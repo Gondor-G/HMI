@@ -17,6 +17,146 @@
 using namespace cv;
 using namespace std;
 
+//int** generateJointCoords(skeleton skeleJoints, QRect rect)
+//{
+//    int** jointCoords = new int*[2];
+
+//    int axis = 0; //  X
+
+//    for (int joint = left_wrist; joint != last; joint++) {
+//        jointCoords[axis] = new int[73];
+//        jointCoords[axis][joint] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
+////        cout << jointCoords[axis][joint] << ' ';
+//    }
+
+//    axis = 1; // Y
+
+//    for (int joint = left_wrist; joint != last; joint++) {
+//        jointCoords[axis] = new int[73];
+//        jointCoords[axis][joint] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
+//    }
+
+//    return jointCoords;
+//}
+
+
+bool isGesture_RightFist(skeleton skeleJoints)
+{
+        if(skeleJoints.joints[right_thumb_tip].y > skeleJoints.joints[right_index_mcp].y && skeleJoints.joints[right_thumb_tip].y < skeleJoints.joints[right_index_tip].y
+        /*&& skeleJoints.joints[right_thumb_tip].x < skeleJoints.joints[right_index_tip].x && skeleJoints.joints[right_thumb_tip].x < skeleJoints.joints[right_index_mcp].x*/)
+    {
+
+        if(skeleJoints.joints[right_index_mcp].y < skeleJoints.joints[right_index_tip].y)
+        {
+            if(skeleJoints.joints[right_middle_mcp].y < skeleJoints.joints[right_middle_tip].y)
+            {
+                if(skeleJoints.joints[right_ring_mcp].y < skeleJoints.joints[right_ring_tip].y)
+                {
+                    if(skeleJoints.joints[right_pinky_mcp].y < skeleJoints.joints[right_pinky_tip].y)
+                    {
+                        //cout << "R_FIST";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_RightPalm(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[right_thumb_cmc].y > skeleJoints.joints[right_thumb_mcp].y && skeleJoints.joints[right_thumb_mcp].y > skeleJoints.joints[right_thumb_tip].y)
+    {
+        if(skeleJoints.joints[right_index_cmc].y > skeleJoints.joints[right_index_mcp].y && skeleJoints.joints[right_index_mcp].y > skeleJoints.joints[right_index_tip].y)
+        {
+            if(skeleJoints.joints[right_middle_cmc].y > skeleJoints.joints[right_middle_mcp].y && skeleJoints.joints[right_middle_mcp].y > skeleJoints.joints[right_middle_tip].y)
+            {
+                if(skeleJoints.joints[right_ring_cmc].y > skeleJoints.joints[right_ring_mcp].y && skeleJoints.joints[right_ring_mcp].y > skeleJoints.joints[right_ring_tip].y)
+                {
+                    if(skeleJoints.joints[right_pinky_cmc].y > skeleJoints.joints[right_pinky_mcp].y && skeleJoints.joints[right_pinky_mcp].y > skeleJoints.joints[right_pinky_tip].y)
+                    {
+                        //cout << "R_PALM";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_LeftFist(skeleton skeleJoints)
+{
+        if(skeleJoints.joints[left_thumb_tip].y > skeleJoints.joints[left_index_mcp].y && skeleJoints.joints[left_thumb_tip].y < skeleJoints.joints[left_index_tip].y
+        /*&& skeleJoints.joints[left_thumb_tip].x > skeleJoints.joints[left_index_tip].x && skeleJoints.joints[left_thumb_tip].x > skeleJoints.joints[left_index_mcp].x*/)
+    {
+
+        if(skeleJoints.joints[left_index_mcp].y < skeleJoints.joints[left_index_tip].y)
+        {
+            if(skeleJoints.joints[left_middle_mcp].y < skeleJoints.joints[left_middle_tip].y)
+            {
+                if(skeleJoints.joints[left_ring_mcp].y < skeleJoints.joints[left_ring_tip].y)
+                {
+                    if(skeleJoints.joints[left_pinky_mcp].y < skeleJoints.joints[left_pinky_tip].y)
+                    {
+                        //cout << "L_FIST";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_LeftPalm(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[left_thumb_cmc].y > skeleJoints.joints[left_thumb_mcp].y && skeleJoints.joints[left_thumb_mcp].y > skeleJoints.joints[left_thumb_tip].y)
+    {
+        if(skeleJoints.joints[left_index_cmc].y > skeleJoints.joints[left_index_mcp].y && skeleJoints.joints[left_index_mcp].y > skeleJoints.joints[left_index_tip].y)
+        {
+            if(skeleJoints.joints[left_middle_cmc].y > skeleJoints.joints[left_middle_mcp].y && skeleJoints.joints[left_middle_mcp].y > skeleJoints.joints[left_middle_tip].y)
+            {
+                if(skeleJoints.joints[left_ring_cmc].y > skeleJoints.joints[left_ring_mcp].y && skeleJoints.joints[left_ring_mcp].y > skeleJoints.joints[left_ring_tip].y)
+                {
+                    if(skeleJoints.joints[left_pinky_cmc].y > skeleJoints.joints[left_pinky_mcp].y && skeleJoints.joints[left_pinky_mcp].y > skeleJoints.joints[left_pinky_tip].y)
+                    {
+                        //cout << "L_PALM";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool isGesture_LeftAboveHead(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[left_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[left_wrist].y > 0.0)
+    {
+        //cout << "L_UP";
+        return true;
+    }
+    return false;
+}
+
+bool isGesture_RightAboveHead(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[right_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[right_wrist].y > 0.0)
+    {
+        //cout << "R_UP";
+        return true;
+    }
+    return false;
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -61,6 +201,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QRect rect2;
     rect2= ui->frame_2->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect2.translate(0,15);
+
 
     // vypisi rozmerov grafickeho okna
 //    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
@@ -300,6 +441,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
          //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
+
 //                int diag = (sqrt(pow(((int) rect2.right() - (int) rect2.left()), 2) + pow(((int) rect2.bottom() - (int) rect2.top()), 2)));
 //                diag = ((((int) (-diag / 100) * 5) + 100) / 5) + 15;
 //                cout<<"diag = " << diag << endl;
@@ -308,22 +450,64 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 int xp=rect2.width()-(rect2.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().x(); //prepocet do obrazovky
                 int yp=rect2.height()-(rect2.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().y();//prepocet do obrazovky
                 if(rect2.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
-
-
         }
     }
     if(updateSkeletonPicture==1 )
     {
+        int joint_coords[73][2];
+
         painter.setPen(Qt::red);
-        for(int i=0;i<75;i++)
+        for(int joint = left_wrist; joint != last; joint++)
         {
-            int xp=rect.width()-rect.width() * skeleJoints.joints[i].x+rect.topLeft().x();
-            int yp= (rect.height() *skeleJoints.joints[i].y)+rect.topLeft().y();
-            if(rect.contains(xp,yp))
-                painter.drawEllipse(QPoint(xp, yp),2,2);
+            joint_coords[joint][0] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
+            joint_coords[joint][1] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
+
+            /*if(joint == left_index_cmc && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+                painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),5,5);
+            else */if(rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+                painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
         }
+
+
+//        isGesture_LeftFist(skeleJoints);
+//        cout << "___";
+//        isGesture_LeftPalm(skeleJoints);
+//        cout << "___";
+//        isGesture_RightFist(skeleJoints);
+//        cout << "___";
+//        isGesture_RightPalm(skeleJoints);
+//        cout << "___";
+//        isGesture_LeftAboveHead(skeleJoints);
+//        cout << "___";
+//        isGesture_RightAboveHead(skeleJoints);
+//        cout << "    ";
+
+        if(!isGesture_LeftAboveHead(skeleJoints) && !isGesture_RightAboveHead(skeleJoints))
+        {
+            robot.setRotationSpeed(0);
+            robot.setTranslationSpeed(0);
+        }
+        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightPalm(skeleJoints)) //RIGHT PALM UP -> TURN RIGHT
+        {
+            robot.setRotationSpeed(-3.14159/2);
+        }
+        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftPalm(skeleJoints)) //LEFT PALM UP -> TURN LEFT
+        {
+            robot.setRotationSpeed(3.14159/2);
+        }
+        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightFist(skeleJoints)) // RIGHT FIST UP -> FORWARD
+        {
+            robot.setTranslationSpeed(250);
+        }
+        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftFist(skeleJoints)) // LEFT FIST UP -> BACKWARD
+        {
+            robot.setTranslationSpeed(-250);
+        }
+
+        //cout << "endl";
     }
 }
 
@@ -355,6 +539,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
     else
         robot.setTranslationSpeed(0);
+
+
+    //cout << angle_at_left_wrist << endl;
+
+//    if(angle_at_left_wrist >= 45)
+//    {
+//        cout << "Forward" << angle_at_left_wrist << endl;
+//        robot.setTranslationSpeed(500);
+//    }
 
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
