@@ -11,84 +11,143 @@
 /// AK SA DOSTANES NA SKUSKU
 
 
-//int l_wrist_indexf;
-//int l_wrist_pinkyf;
-//int l_indexf_pinkyf;
+//int** generateJointCoords(skeleton skeleJoints, QRect rect)
+//{
+//    int** jointCoords = new int*[2];
 
-//int** jointCoords;
+//    int axis = 0; //  X
 
-int** generateJointCoords(skeleton skeleJoints, QRect rect)
+//    for (int joint = left_wrist; joint != last; joint++) {
+//        jointCoords[axis] = new int[73];
+//        jointCoords[axis][joint] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
+////        cout << jointCoords[axis][joint] << ' ';
+//    }
+
+//    axis = 1; // Y
+
+//    for (int joint = left_wrist; joint != last; joint++) {
+//        jointCoords[axis] = new int[73];
+//        jointCoords[axis][joint] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
+//    }
+
+//    return jointCoords;
+//}
+
+
+bool isGesture_RightFist(skeleton skeleJoints)
 {
-    int** jointCoords = new int*[2];
-
-    int axis = 0; //  X
-
-    for (int joint = left_wrist; joint != last; joint++) {
-        jointCoords[axis] = new int[73];
-        jointCoords[axis][joint] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
-//        cout << jointCoords[axis][joint] << ' ';
-    }
-
-    axis = 1; // Y
-
-    for (int joint = left_wrist; joint != last; joint++) {
-        jointCoords[axis] = new int[73];
-        jointCoords[axis][joint] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
-    }
-
-    return jointCoords;
-}
-
-bool isAboveHead_RIGHT(skeleton skeleJoints, QRect rect)
-{
-    return true;
-}
-
-bool isFistGesture(int** jointCoords)
-{
-    cout << "TESTING" << endl;
-//    int THUMB_TIP_X = jointCoords[0][right_thumb_tip];//rect.width()-rect.width() * skeleJoints.joints[right_thumb_tip].x+rect.topLeft().x();
-//    int THUMB_TIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_thumb_tip].y)+rect.topLeft().y();
-
-//    int INDEX_PIP_X = jointCoords[0][right_thumb_tip];//rect.width()-rect.width() * skeleJoints.joints[right_index_mcp].x+rect.topLeft().x();
-//    int INDEX_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_index_mcp].y)+rect.topLeft().y();
-
-//    int MIDDLE_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_middle_mcp].y)+rect.topLeft().y();
-//    int RING_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_ring_mcp].y)+rect.topLeft().y();
-//    int PINKY_PIP_Y = jointCoords[0][right_thumb_tip];//(rect.height() *skeleJoints.joints[right_pinky_mcp].y)+rect.topLeft().y();
-
-
-//    int INDEX_TIP_X = //rect.width()-rect.width() * skeleJoints.joints[right_index_tip].x+rect.topLeft().x();
-//    int INDEX_TIP_Y = //(rect.height() *skeleJoints.joints[right_index_tip].y)+rect.topLeft().y();
-
-//    int MIDDLE_TIP_Y = //(rect.height() *skeleJoints.joints[right_middle_tip].y)+rect.topLeft().y();
-//    int RING_TIP_Y = //(rect.height() *skeleJoints.joints[right_ring_tip].y)+rect.topLeft().y();
-//    int PINKY_TIP_Y = //(rect.height() *skeleJoints.joints[right_pinky_tip].y)+rect.topLeft().y();
-
-    //cout << "Thumb:" << jointCoords[1][right_thumb_tip] << "index_pip:" << jointCoords[1][right_index_mcp] << "index_tip:" << jointCoords[1][right_index_tip] << endl;
-
-    if(jointCoords[1][right_thumb_tip] > jointCoords[1][right_index_mcp] && jointCoords[1][right_thumb_tip] < jointCoords[1][right_index_tip] && jointCoords[0][right_thumb_tip] > jointCoords[0][right_index_tip] && jointCoords[0][right_thumb_tip] > jointCoords[0][right_index_mcp])
+        if(skeleJoints.joints[right_thumb_tip].y > skeleJoints.joints[right_index_mcp].y && skeleJoints.joints[right_thumb_tip].y < skeleJoints.joints[right_index_tip].y
+        /*&& skeleJoints.joints[right_thumb_tip].x < skeleJoints.joints[right_index_tip].x && skeleJoints.joints[right_thumb_tip].x < skeleJoints.joints[right_index_mcp].x*/)
     {
-        cout << "first" << endl;
-//        if(jointCoords[1][right_index_mcp] < jointCoords[1][right_index_tip])
-//        {
-//            cout << "second" << endl;
-//            if(jointCoords[1][right_middle_mcp] < jointCoords[1][right_middle_tip])
-//            {
-//                cout << "third" << endl;
-//                if(jointCoords[1][right_ring_mcp] < jointCoords[1][right_ring_tip])
-//                {
-//                    cout << "fourth" << endl;
-//                    if(jointCoords[1][right_pinky_mcp] < jointCoords[1][right_pinky_tip])
-//                    {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
+
+        if(skeleJoints.joints[right_index_mcp].y < skeleJoints.joints[right_index_tip].y)
+        {
+            if(skeleJoints.joints[right_middle_mcp].y < skeleJoints.joints[right_middle_tip].y)
+            {
+                if(skeleJoints.joints[right_ring_mcp].y < skeleJoints.joints[right_ring_tip].y)
+                {
+                    if(skeleJoints.joints[right_pinky_mcp].y < skeleJoints.joints[right_pinky_tip].y)
+                    {
+                        //cout << "R_FIST";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_RightPalm(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[right_thumb_cmc].y > skeleJoints.joints[right_thumb_mcp].y && skeleJoints.joints[right_thumb_mcp].y > skeleJoints.joints[right_thumb_tip].y)
+    {
+        if(skeleJoints.joints[right_index_cmc].y > skeleJoints.joints[right_index_mcp].y && skeleJoints.joints[right_index_mcp].y > skeleJoints.joints[right_index_tip].y)
+        {
+            if(skeleJoints.joints[right_middle_cmc].y > skeleJoints.joints[right_middle_mcp].y && skeleJoints.joints[right_middle_mcp].y > skeleJoints.joints[right_middle_tip].y)
+            {
+                if(skeleJoints.joints[right_ring_cmc].y > skeleJoints.joints[right_ring_mcp].y && skeleJoints.joints[right_ring_mcp].y > skeleJoints.joints[right_ring_tip].y)
+                {
+                    if(skeleJoints.joints[right_pinky_cmc].y > skeleJoints.joints[right_pinky_mcp].y && skeleJoints.joints[right_pinky_mcp].y > skeleJoints.joints[right_pinky_tip].y)
+                    {
+                        //cout << "R_PALM";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_LeftFist(skeleton skeleJoints)
+{
+        if(skeleJoints.joints[left_thumb_tip].y > skeleJoints.joints[left_index_mcp].y && skeleJoints.joints[left_thumb_tip].y < skeleJoints.joints[left_index_tip].y
+        /*&& skeleJoints.joints[left_thumb_tip].x > skeleJoints.joints[left_index_tip].x && skeleJoints.joints[left_thumb_tip].x > skeleJoints.joints[left_index_mcp].x*/)
+    {
+
+        if(skeleJoints.joints[left_index_mcp].y < skeleJoints.joints[left_index_tip].y)
+        {
+            if(skeleJoints.joints[left_middle_mcp].y < skeleJoints.joints[left_middle_tip].y)
+            {
+                if(skeleJoints.joints[left_ring_mcp].y < skeleJoints.joints[left_ring_tip].y)
+                {
+                    if(skeleJoints.joints[left_pinky_mcp].y < skeleJoints.joints[left_pinky_tip].y)
+                    {
+                        //cout << "L_FIST";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+bool isGesture_LeftPalm(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[left_thumb_cmc].y > skeleJoints.joints[left_thumb_mcp].y && skeleJoints.joints[left_thumb_mcp].y > skeleJoints.joints[left_thumb_tip].y)
+    {
+        if(skeleJoints.joints[left_index_cmc].y > skeleJoints.joints[left_index_mcp].y && skeleJoints.joints[left_index_mcp].y > skeleJoints.joints[left_index_tip].y)
+        {
+            if(skeleJoints.joints[left_middle_cmc].y > skeleJoints.joints[left_middle_mcp].y && skeleJoints.joints[left_middle_mcp].y > skeleJoints.joints[left_middle_tip].y)
+            {
+                if(skeleJoints.joints[left_ring_cmc].y > skeleJoints.joints[left_ring_mcp].y && skeleJoints.joints[left_ring_mcp].y > skeleJoints.joints[left_ring_tip].y)
+                {
+                    if(skeleJoints.joints[left_pinky_cmc].y > skeleJoints.joints[left_pinky_mcp].y && skeleJoints.joints[left_pinky_mcp].y > skeleJoints.joints[left_pinky_tip].y)
+                    {
+                        //cout << "L_PALM";
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool isGesture_LeftAboveHead(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[left_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[left_wrist].y > 0.0)
+    {
+        //cout << "L_UP";
         return true;
     }
+    return false;
+}
 
+bool isGesture_RightAboveHead(skeleton skeleJoints)
+{
+    if(skeleJoints.joints[right_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[right_wrist].y > 0.0)
+    {
+        //cout << "R_UP";
+        return true;
+    }
     return false;
 }
 
@@ -199,33 +258,49 @@ void MainWindow::paintEvent(QPaintEvent *event)
             joint_coords[joint][0] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
             joint_coords[joint][1] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
 
-            if(joint == left_index_mcp && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+            /*if(joint == left_index_cmc && rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),5,5);
-            else if(rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
+            else */if(rect.contains(joint_coords[joint][0],joint_coords[joint][1]))
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
         }
 
-        int** jointCoords = generateJointCoords(skeleJoints, rect);
-        cout << "coords set" << endl;
-//        if(isFistGesture(jointCoords))
-//        {
-//            cout << "FIST" << endl;
-//        }
-//        else
-//        {
-//            cout << "NO" << endl << endl;
-//        }
 
+//        isGesture_LeftFist(skeleJoints);
+//        cout << "___";
+//        isGesture_LeftPalm(skeleJoints);
+//        cout << "___";
+//        isGesture_RightFist(skeleJoints);
+//        cout << "___";
+//        isGesture_RightPalm(skeleJoints);
+//        cout << "___";
+//        isGesture_LeftAboveHead(skeleJoints);
+//        cout << "___";
+//        isGesture_RightAboveHead(skeleJoints);
+//        cout << "    ";
 
+        if(!isGesture_LeftAboveHead(skeleJoints) && !isGesture_RightAboveHead(skeleJoints))
+        {
+            robot.setRotationSpeed(0);
+            robot.setTranslationSpeed(0);
+        }
+        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightPalm(skeleJoints)) //RIGHT PALM UP -> TURN RIGHT
+        {
+            robot.setRotationSpeed(-3.14159/2);
+        }
+        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftPalm(skeleJoints)) //LEFT PALM UP -> TURN LEFT
+        {
+            robot.setRotationSpeed(3.14159/2);
+        }
+        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightFist(skeleJoints)) // RIGHT FIST UP -> FORWARD
+        {
+            robot.setTranslationSpeed(250);
+        }
+        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftFist(skeleJoints)) // LEFT FIST UP -> BACKWARD
+        {
+            robot.setTranslationSpeed(-250);
+        }
 
-//        if(rect.contains(joint_coords[left_wrist][0],joint_coords[left_wrist][1]) && rect.contains(joint_coords[left_index_tip][0],joint_coords[left_index_tip][1]) && rect.contains(joint_coords[left_pink_tip][0],joint_coords[left_pink_tip][1]))
-//        {
-//            int l_wrist_indexf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_index_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_index_tip][1])^2);
-//            int l_wrist_pinkyf = sqrt((joint_coords[left_wrist][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_wrist][1] - joint_coords[left_pink_tip][1])^2);
-//            int l_indexf_pinkyf = sqrt((joint_coords[left_index_tip][0] - joint_coords[left_pink_tip][0])^2 + (joint_coords[left_index_tip][1] - joint_coords[left_pink_tip][1])^2);
-
-//            angle_at_left_wrist = acos((l_wrist_indexf^2 + l_wrist_pinkyf^2 - l_indexf_pinkyf^2) / (2 * l_wrist_indexf * l_wrist_pinkyf));
-//        }
+        //cout << "endl";
     }
 }
 
