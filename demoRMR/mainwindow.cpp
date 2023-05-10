@@ -17,6 +17,8 @@
 using namespace cv;
 using namespace std;
 
+bool safety_stop = false;
+
 //int** generateJointCoords(skeleton skeleJoints, QRect rect)
 //{
 //    int** jointCoords = new int*[2];
@@ -163,7 +165,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="127.0.0.1";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";//127.0.0.1//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -422,7 +424,14 @@ void MainWindow::paintEvent(QPaintEvent *event)
         cv::rectangle(clone_frame, Point(800, 10), Point(840, 30), Scalar(255, 0, 0), 2, 8);
         cv::rectangle(clone_frame, Point(840, 18), Point(843, 22), Scalar(255, 0, 0), 2, 8);
 
-
+        if(safety_stop)
+        {
+            cv::putText(clone_frame, "System pause!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+        }
+        else
+        {
+            cv::putText(clone_frame, "", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+        }
 
 
     //        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
@@ -485,29 +494,49 @@ void MainWindow::paintEvent(QPaintEvent *event)
 //        isGesture_RightAboveHead(skeleJoints);
 //        cout << "    ";
 
-        if(!isGesture_LeftAboveHead(skeleJoints) && !isGesture_RightAboveHead(skeleJoints))
+//        if(!isGesture_LeftAboveHead(skeleJoints) && !isGesture_RightAboveHead(skeleJoints))
+//        {
+//            robot.setRotationSpeed(0);
+//            robot.setTranslationSpeed(0);
+//        }
+        if(!safety_stop)
         {
-            robot.setRotationSpeed(0);
-            robot.setTranslationSpeed(0);
+            if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightPalm(skeleJoints)) //RIGHT PALM UP -> TURN RIGHT
+            {
+                rotationspeed = -3.14159/6;
+                //robot.setRotationSpeed(-3.14159/2);
+                //cout << "right"<< endl;
+            }
+            else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftPalm(skeleJoints)) //LEFT PALM UP -> TURN LEFT
+            {
+                rotationspeed = 3.14159/6;
+                //robot.setRotationSpeed(3.14159/2);
+                //cout << "left"<< endl;
+            }
+            else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightFist(skeleJoints)) // RIGHT FIST UP -> FORWARD
+            {
+                forwardspeed = 100;
+                //robot.setTranslationSpeed(250);
+                //cout << "forward"<< endl;
+            }
+            else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftFist(skeleJoints)) // LEFT FIST UP -> BACKWARD
+            {
+                forwardspeed = -100;
+                //robot.setTranslationSpeed(-250);
+                //cout << "backward"<< endl;
+            }
+            else
+            {
+                rotationspeed = 0;
+                forwardspeed = 0;
+                cout << "nope" << endl;
+            }
         }
-        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightPalm(skeleJoints)) //RIGHT PALM UP -> TURN RIGHT
+        else
         {
-            robot.setRotationSpeed(-3.14159/2);
+            rotationspeed = 0;
+            forwardspeed = 0;
         }
-        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftPalm(skeleJoints)) //LEFT PALM UP -> TURN LEFT
-        {
-            robot.setRotationSpeed(3.14159/2);
-        }
-        else if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightFist(skeleJoints)) // RIGHT FIST UP -> FORWARD
-        {
-            robot.setTranslationSpeed(250);
-        }
-        else if(isGesture_LeftAboveHead(skeleJoints) && isGesture_LeftFist(skeleJoints)) // LEFT FIST UP -> BACKWARD
-        {
-            robot.setTranslationSpeed(-250);
-        }
-
-        //cout << "endl";
     }
 }
 
@@ -671,8 +700,18 @@ robot.setRotationSpeed(-3.14159/2);
 
 void MainWindow::on_pushButton_4_clicked() //stop
 {
-    robot.setTranslationSpeed(0);
-
+    if(safety_stop == false)
+    {
+        safety_stop = true;
+        ui->pushButton_4->setText("RESET");
+        ui->pushButton_4->setStyleSheet("QPushButton#pushButton_4 { background-color: white }");
+    }
+    else
+    {
+        safety_stop = false;
+        ui->pushButton_4->setText("STOP");
+        ui->pushButton_4->setStyleSheet("QPushButton#pushButton_4 { background-color: gray }");
+    }
 }
 
 
