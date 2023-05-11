@@ -45,6 +45,7 @@ public:
 
     //bool isFistGesture(skeleton skeleJoints);
 
+
     cv::Mat frame[3];
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -72,6 +73,8 @@ private slots:
     void on_pushButton_clicked();
     void getNewFrame();
 
+    //void MainWindow::update();
+
 private:
 
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
@@ -91,6 +94,8 @@ private:
 
      double forwardspeed;//mm/s
      double rotationspeed;//omega/s
+
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:

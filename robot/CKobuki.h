@@ -150,6 +150,15 @@ public:
         return parseKobukiMessage(output,message);
     }
 
+    long double getTickToMeter()
+    {
+        return tickToMeter;
+    }
+
+    long double getWheelbase()
+    {
+        return b;
+    }
 
 private:
 

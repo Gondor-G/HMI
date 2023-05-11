@@ -6,6 +6,9 @@
 #include<iostream>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
+//#include <fstream>
+//#include <stdio.h>
+#include <QTimer>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -18,6 +21,26 @@ using namespace cv;
 using namespace std;
 
 bool safety_stop = false;
+bool emergency_stop = false;
+
+short diff_in_left_encounter, diff_in_right_encounter;
+double left_wheel_distance, right_wheel_distance;
+double angle_goal, distance_from_goal;
+double current_angle = 0;
+double current_x = 0, current_y = 0;
+double rotation_speed = 0;
+unsigned short old_left_encounter, old_right_encounter;
+
+int map_size = 100;
+
+
+int created_map[100][100] = {{0}};
+
+int curret_t =0;
+//int created_map[101][101];
+
+
+
 
 //int** generateJointCoords(skeleton skeleJoints, QRect rect)
 //{
@@ -165,7 +188,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="127.0.0.1";//127.0.0.1//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="192.168.1.13";//127.0.0.1//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -174,8 +197,9 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
 
-
-
+//    QTimer *timer = new QTimer(this);
+//    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+//    timer->start(10);
 
     datacounter=0;
 
@@ -184,6 +208,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+//    for (int i = 0; i < 100; i++) {
+//        delete[] created_map[i];
+//    }
+//    delete[] created_map;
+
     delete ui;
 }
 
@@ -296,6 +325,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
         double Z = 21.0;
         double Yd = 11.5;
 
+        double smallest_D = 500;
+
         for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
         {
             double D = copyOfLaserData.Data[k].scanDistance/10;
@@ -314,12 +345,37 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
             int b,g,r = 0;
 
+            if(D > 5.0 && D < smallest_D)
+            {
+                smallest_D = D;
+            }
+            //cout << D << endl;
+            if(smallest_D < 30 && !emergency_stop && !safety_stop)
+            {
+                //cout << D << endl;
+                //cout << "pushed safety" << endl;
+                on_pushButton_4_clicked();
+                emergency_stop = true;
+            }
+
+//            if(emergency_stop && !safety_stop)
+//            {
+//                cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+//            }
+
+
+
+
             if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
             { // front
                 if(D <= 50){
                     b = 0;
                     g = 0;
                     r = 255;
+                    if(!safety_stop && D > 10)
+                    {
+                        cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+                    }
                 }
                 else if(D > 50 && D <= 100){
                     b = 0;
@@ -342,6 +398,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     b = 0;
                     g = 0;
                     r = 255;
+                    if(!safety_stop && D > 10)
+                    {
+                        cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+                    }
                 }
                 else if(D > 50 && D <= 100){
                     b = 0;
@@ -366,6 +426,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     b = 0;
                     g = 0;
                     r = 255;
+                    if(!safety_stop && D > 10)
+                    {
+                        cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+                    }
                 }
                 else if(D > 50 && D <= 100){
                     b = 0;
@@ -390,6 +454,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
                     b = 0;
                     g = 0;
                     r = 255;
+                    if(!safety_stop && D > 10)
+                    {
+                        cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+                    }
                 }
                 else if(D > 50 && D <= 100){
                     b = 0;
@@ -409,6 +477,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
             }
         }
 
+        if(smallest_D > 50 && emergency_stop)
+        {
+            //cout << "safe?" << smallest_D << endl;
+            emergency_stop = false;
+        }
+
         // Bateria graficka znacka.
         int bateria = ((robotdata.Battery / 2.55) * 0.3) + 805;
         if((robotdata.Battery / 2.55) <= 50.0 && (robotdata.Battery / 2.55) > 25.0){
@@ -424,7 +498,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
         cv::rectangle(clone_frame, Point(800, 10), Point(840, 30), Scalar(255, 0, 0), 2, 8);
         cv::rectangle(clone_frame, Point(840, 18), Point(843, 22), Scalar(255, 0, 0), 2, 8);
 
-        if(safety_stop)
+        if(safety_stop || (emergency_stop && safety_stop))
         {
             cv::putText(clone_frame, "System pause!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
         }
@@ -448,19 +522,41 @@ void MainWindow::paintEvent(QPaintEvent *event)
             painter.setPen(pero);
             //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
          //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
-            for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+            for(int k=-1;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
 
 //                int diag = (sqrt(pow(((int) rect2.right() - (int) rect2.left()), 2) + pow(((int) rect2.bottom() - (int) rect2.top()), 2)));
 //                diag = ((((int) (-diag / 100) * 5) + 100) / 5) + 15;
 //                cout<<"diag = " << diag << endl;
 
-                int dist=copyOfLaserData.Data[k].scanDistance/80;//diag //vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
-                int xp=rect2.width()-(rect2.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().x(); //prepocet do obrazovky
-                int yp=rect2.height()-(rect2.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().y();//prepocet do obrazovky
-                if(rect2.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                int dist;
+                int xp;
+                int yp;
 
-                    painter.drawEllipse(QPoint(xp, yp),2,2);
+                if(k == -1)
+                {
+                    dist = 0;
+                    xp = rect2.width()/2 + rect2.topLeft().x();
+                    yp= rect2.height()/2 + rect2.topLeft().y();
+
+                    pero.setColor("orange");
+                    painter.setPen(pero);
+                    painter.drawEllipse(QPoint(xp, yp),5,5);
+                    pero.setColor(Qt::green);
+                    painter.setPen(pero);
+                }
+                else
+                {
+                    dist=copyOfLaserData.Data[k].scanDistance/80;//diag //vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+                    xp=rect2.width()-(rect2.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().x(); //prepocet do obrazovky
+                    yp=rect2.height()-(rect2.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect2.topLeft().y();//prepocet do obrazovky
+                    if(rect2.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                    {
+                        painter.drawEllipse(QPoint(xp, yp),2,2);
+                    }
+                }
+
+
             }
         }
     }
@@ -529,7 +625,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
             {
                 rotationspeed = 0;
                 forwardspeed = 0;
-                cout << "nope" << endl;
+                //cout << "nope" << endl;
             }
         }
         else
@@ -554,7 +650,7 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
-
+    CKobuki kobuki;
 
     ///tu mozete robit s datami z robota
     /// ale nic vypoctovo narocne - to iste vlakno ktore cita data z robota
@@ -569,7 +665,78 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     else
         robot.setTranslationSpeed(0);
 
+//    if(datacounter == 0)
+//    {
+//        for(int i = 0;i < 100;i++) {
+//            created_map[i] = new int[100];
+//        }
 
+//        for(int i = 0;i < 100;i++) {
+//            for(int j = 0;j < 100;j++) {
+//                created_map[i][j] = 0;
+//            }
+//        }
+//    }
+
+//    if (datacounter == 0)
+//    {
+//        old_left_encounter = robotdata.EncoderLeft;
+//        old_right_encounter = robotdata.EncoderRight;
+//    }
+//    diff_in_left_encounter = robotdata.EncoderLeft - old_left_encounter;
+//    diff_in_right_encounter = robotdata.EncoderRight - old_right_encounter;
+
+//    left_wheel_distance = kobuki.getTickToMeter() * diff_in_left_encounter;
+//    right_wheel_distance = kobuki.getTickToMeter() * diff_in_right_encounter;
+
+//    double delta_fi = (right_wheel_distance - left_wheel_distance) / kobuki.getWheelbase();
+
+//    double delta_s = (right_wheel_distance + left_wheel_distance) / 2;
+
+//    current_x += delta_s * cos(current_angle + (delta_fi / 2));
+//    current_y += delta_s * sin(current_angle + (delta_fi / 2));
+
+//    current_angle += delta_fi;
+
+//    if (current_angle > PI)
+//        current_angle -= 2 * PI;
+//    if (current_angle <= -PI)
+//        current_angle = current_angle + 2 * PI;
+//    //datacounter++;
+
+//    old_left_encounter = robotdata.EncoderLeft;
+//    old_right_encounter = robotdata.EncoderRight;
+
+//    if(curret_t % 5 == 0)
+//    {
+//        created_map[50 + int(current_x*10)][50 - int(current_y*10)] = curret_t/5;
+//    }
+
+//    //cout << "testing -------- "<< "x:" << current_x << "y:" << current_y << endl;
+
+//    int u, v;
+//    ofstream fp("D:/STU_PROGRAMS/Documents/HMI/map.txt");
+//    if(fp.is_open())
+//    {
+//        for (u = 0; u < 100; u++)
+//        {
+//            fp << endl;
+//            for (v = 0; v < 100; v++)
+//            {
+//                if (created_map[v][u] == 0)
+//                {
+//                    fp << "__ ";
+//                }
+//                else
+//                {
+//                    fp << created_map[v][u]<<' ';
+//                }
+//            }
+//        }
+//    }
+
+
+//        cout << "x:" << current_x << "y:" << current_y << endl;
     //cout << angle_at_left_wrist << endl;
 
 //    if(angle_at_left_wrist >= 45)
@@ -654,7 +821,7 @@ void MainWindow::on_pushButton_9_clicked() //start button
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
     //---simulator ma port 8889, realny robot 8000
-    robot.setCameraParameters("http://"+ipaddress+":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://"+ipaddress+":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.setSkeletonParameters("127.0.0.1",23432,23432,std::bind(&MainWindow::processThisSkeleton,this,std::placeholders::_1));
     ///ked je vsetko nasetovane tak to tento prikaz spusti (ak nieco nieje setnute,tak to normalne nenastavi.cize ak napr nechcete kameru,vklude vsetky info o nej vymazte)
     robot.robotStart();
@@ -738,5 +905,9 @@ void MainWindow::getNewFrame()
 
 }
 
-
+//void MainWindow::update()
+//{
+//    //cout << curret_t;
+//    curret_t++;
+//}
 
