@@ -31,6 +31,18 @@ namespace Ui {
 class MainWindow;
 }
 
+typedef struct
+{
+    unsigned short l;
+    unsigned short previousEncoderRight;
+    unsigned short previousEncoderLeft;
+    double x;
+    double y;
+    double fi;
+    double fi_radian;
+    double fi_gyro;
+}PositionData;
+
 ///toto je trieda s oknom.. ktora sa spusti ked sa spusti aplikacia.. su tu vsetky gombiky a spustania...
 class MainWindow : public QMainWindow
 {
@@ -38,6 +50,7 @@ class MainWindow : public QMainWindow
 
 public:
     bool useCamera1;
+    int activeMode;
   //  cv::VideoCapture cap;
 
     int actIndex;
@@ -56,6 +69,10 @@ public:
 int processThisCamera(cv::Mat cameraData);
 int processThisSkeleton(skeleton skeledata);
 
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
 private slots:
     void on_pushButton_9_clicked();
 
@@ -72,7 +89,14 @@ private slots:
     void on_pushButton_clicked();
     void getNewFrame();
 
+    void on_pushButton_mode_clicked();
+
+    void on_Mision_start_clicked();
+
 private:
+    void executeTask4(int M);
+    void xecuteTask1();
+    void misionEzecute();
 
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
@@ -91,6 +115,8 @@ private:
 
      double forwardspeed;//mm/s
      double rotationspeed;//omega/s
+
+     void onMouseEvent(const QPoint &pos);
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:

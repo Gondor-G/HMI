@@ -6,6 +6,9 @@
 #include<iostream>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
+#include<QMouseEvent>
+#include <iostream>
+#include <fstream>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -14,9 +17,40 @@
 /// AZ POTOM ZACNI ROBIT... AK TO NESPRAVIS, POJDU BODY DOLE... A NIE JEDEN,ALEBO DVA ALE BUDES RAD
 /// AK SA DOSTANES NA SKUSKU
 
+double getTickToMeter(unsigned short previousTick, unsigned short tick);
+int misionCount = 0;
 using namespace cv;
 using namespace std;
+bool isCorrectPosition = false;
+bool isCorrectAngle = false;
+bool misionComplete = false;
+bool Run = false;
+int M = 0;
+bool misionPosibility = true;
+bool startApp = true;
+void mapCreator();
+double xZelana = 5.25;//5.25
+double yZelana = 2.30;//2.30
+int positionX = 0;
+int positionY = 0;
+int grid[240][240] = {{0}};
+int path[2][240] = {{0}};
+int misie[3][240] = {{0}};
+double mapKoty[53][2] = {{0,0},{574.5,0},{574.5,460.5},{550.5,460.5},{550.5,471.5},{55.5,471.5},{55.5,431.5},{0,431.5},{0,0},//obvod
+                  {264.5,0},{264.5,154.5},{267.5,154.5},{267.5,0},//1
+                  {264.5,151.5},{264.5,154.5},{110,154.5},{110,151.5},//2
+                  {110,151.5},{110,309},{114,309},{114,154.5},//3
+                  {110,154.5},{110,309},{114,309},{114,154.5},//4
+                  {574.5,309},{574.5,312},{365.5,312},{365.5,309},//5
+                  {423,309},{423,154.5},{420,154.5},{420,309},//6
+                  {423,154.50},{477.5,154.5},{477.5,157.5},{423,157.5},//7
+                  {365.5,312},{365.5,366.5},{368.5,366.5},{368.5,312},//8
+                  {267.5,254.5},{267.5,309},{264.5,309},{264.5,254.5},//9
+                  {267.5,309},{267.5,312},{213,312},{213,309},//10
+                  {213,309},{213,254.5},{216,254.5},{216,309}};//11
 
+
+PositionData positionDataStruct;
 //int** generateJointCoords(skeleton skeleJoints, QRect rect)
 //{
 //    int** jointCoords = new int*[2];
@@ -139,7 +173,7 @@ bool isGesture_LeftPalm(skeleton skeleJoints)
 
 bool isGesture_LeftAboveHead(skeleton skeleJoints)
 {
-    if(skeleJoints.joints[left_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[left_wrist].y > 0.0)
+    if(skeleJoints.joints[left_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[left_wrist].y > (0.0))
     {
         //cout << "L_UP";
         return true;
@@ -149,7 +183,7 @@ bool isGesture_LeftAboveHead(skeleton skeleJoints)
 
 bool isGesture_RightAboveHead(skeleton skeleJoints)
 {
-    if(skeleJoints.joints[right_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[right_wrist].y > 0.0)
+    if(skeleJoints.joints[right_wrist].y < skeleJoints.joints[nose].y && skeleJoints.joints[right_wrist].y > (0.0))
     {
         //cout << "R_UP";
         return true;
@@ -161,6 +195,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+        positionDataStruct.x = 0.5;
+        positionDataStruct.y = 0.5;
+        positionX = positionDataStruct.x * 100; // to  * 100 is to transform m into cm
+        positionY = positionDataStruct.y * 100;
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
     ipaddress="127.0.0.1";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
@@ -171,6 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
     actIndex=-1;
     useCamera1=false;
+    activeMode=1;
 
 
 
@@ -424,6 +463,19 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 
 
+        if(!misionPosibility && Run == false){
+            cv::putText(clone_frame, "Imposible mision!", Point(25, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+            ui->Mision_start->setText("Mision Start");
+        }
+        else if(Run == false){
+            cv::putText(clone_frame, "System pause!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+        }
+        else{
+            cv::putText(clone_frame, "", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+        }
+        if(misie[2][M] == 3 && misionComplete == true){
+            cv::putText(clone_frame, "Som v cieli", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
+        }
 
     //        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
 
@@ -525,7 +577,29 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
+    if(startApp) {
+            positionDataStruct.previousEncoderLeft = robotdata.EncoderLeft;
+            positionDataStruct.previousEncoderRight = robotdata.EncoderRight;
 
+            startApp = false;
+        }
+
+    static double firstGyro=robotdata.GyroAngle;
+    positionDataStruct.fi_gyro=(robotdata.GyroAngle-firstGyro)/100.0;
+
+    long double d = 0.23; // vzdialenost medzi kolesami v metroch
+    double lengthRight = getTickToMeter(positionDataStruct.previousEncoderRight, robotdata.EncoderRight);
+    double lengthLeft = getTickToMeter(positionDataStruct.previousEncoderLeft, robotdata.EncoderLeft);
+
+    positionDataStruct.fi = (robotdata.GyroAngle/100.0);
+    if((robotdata.GyroAngle/100.0) < 0){
+        positionDataStruct.fi = positionDataStruct.fi + 360.0;
+    }
+    positionDataStruct.x += ((lengthRight + lengthLeft)/2) * cos(positionDataStruct.fi_gyro*PI/180.0);
+    positionDataStruct.y += ((lengthRight + lengthLeft)/2) * sin(positionDataStruct.fi_gyro*PI/180.0);
+
+    positionDataStruct.previousEncoderLeft = robotdata.EncoderLeft;
+    positionDataStruct.previousEncoderRight = robotdata.EncoderRight;
 
     ///tu mozete robit s datami z robota
     /// ale nic vypoctovo narocne - to iste vlakno ktore cita data z robota
@@ -551,6 +625,47 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
+    //(((int) (positionDataStruct.x * 100.0)/5.0) == misie[0][M]) && (((int) (positionDataStruct.y * 100.0)/5.0) == misie[1][M])
+        for(; (misie[2][M] != 0) && Run == true /*&& misionComplete == true*/; M++){
+            for(int i = 0; i < 240; i++) { // vycistenie mapy
+                for(int j = 0; j < 240; j++) {
+                    grid[i][j] = 0;
+                }
+            }
+            for(int i = 0; i < 2; i++) { // vycistenie path
+                for(int j = 0; j < 240; j++) {
+                    grid[i][j] = 0;
+                }
+            }
+            cout << "misia:" << misie[2][M] << endl;
+            cout << "MM:" << M << endl;
+            mapCreator();
+
+    //        ofstream myfile("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/PerfeknaMapa_predRozsirenimStien.txt");
+            ofstream myfile("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/PerfeknaMapa_predRozsirenimStien.txt");
+            if (myfile.is_open()){
+                myfile << "Here is your map! " << endl;
+                for (int i = 0; i < 240; i++)
+                {
+                    myfile << "" << endl;
+                    for (int j = 0; j < 240; j++){
+                        myfile << " " << grid[i][j];
+                    }
+                }
+                myfile.close();
+            }
+            else cout << "Unable to open file";
+
+            /*
+             * Uloha 4
+             */
+            executeTask4(M); //tato uloha bi sa mala spustit len raz na zaciatku celeho procesu a potom uz len pracovat s maticou suradnic trasi ktoru vytvorila, ak bi sa spustila znou trasa a aj zaplavovy algoritmus bi sa prepisali v zmisle aktualnej pozicie robota ako startovacia pozicia.
+
+            misionComplete == false;
+        }
+
+//        misionEzecute();//vykonanie misii
+
     if(datacounter%5)
     {
 
@@ -573,6 +688,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     return 0;
 
 }
+
+
 
 ///toto je calback na data z lidaru, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
 /// vola sa ked dojdu nove data z lidaru
@@ -644,6 +761,334 @@ void MainWindow::on_pushButton_9_clicked() //start button
             if(/*js==0 &&*/ axis==0){rotationspeed=-value*(3.14159/2.0);}}
     );
 }
+
+void MainWindow::misionEzecute(){
+    double wanted_angle = atan2((misie[1][M] - positionDataStruct.y),(misie[0][M] - positionDataStruct.x))*(180/PI);
+        if(wanted_angle < 0) {
+            wanted_angle += 360;
+        }
+    if(!isCorrectAngle) {
+        if(abs(wanted_angle - positionDataStruct.fi) < 1.0) {
+            robot.setRotationSpeed(0);
+            isCorrectAngle = true;
+        } else {
+            double rotation_speed = 3.14159/4;
+            misionComplete == false;
+        }
+    }
+    else{
+        if(abs(misie[0][M] - (positionDataStruct.x * 100)) < 0.05 && abs(misie[1][M] - (positionDataStruct.y * 100)) < 0.05) {
+           isCorrectPosition = true;
+           robot.setTranslationSpeed(0);
+        }
+        else{
+            robot.setTranslationSpeed(200);
+            misionComplete == false;
+        }
+    }
+}
+
+void MainWindow::xecuteTask1(){
+    if(misie[2][M] == 1){//prejazdovy
+        //executeTask1()
+        if(isCorrectPosition){
+            misionComplete == true;
+        }
+
+    }
+    else if(misie[2][M] == 2){//uloha
+        //executeTask1()
+        if(isCorrectPosition){
+            if(abs(180.0 - positionDataStruct.fi) < 2.0)
+            {
+                robot.setRotationSpeed(0);
+                misionComplete == true;
+            }
+            else{
+                robot.setRotationSpeed(3.14159/4);
+            }
+        }
+
+    }
+    else if(misie[2][M] == 3){//cielovy
+        //executeTask1()
+        if(isCorrectPosition){
+            misionComplete == true;
+
+        }
+
+    }
+}
+
+void MainWindow::executeTask4(int M){
+//    int polomer_robota = 15;
+    int matica = 0;
+
+    for(int i = 0; i < 240; i++) { // rozsirenie hran stien
+        for(int j = 0; j < 240; j++) {
+            matica = grid[i][j];
+            if(matica == 1){
+                for(int k = 1; k <= 3; k++){ //k=3 lebo 5cm * 3 = 15 cm je polomer robota
+                    for(int p = i - 3; p <= (i + 3); p++){
+                        for(int n = j - 3; n <= (j + 3); n++){
+                            if((p >= 0 && p < 240) && (n >= 0 && n < 240) && (grid[p][n] == 0)) // ak maica necacina od 0 a konci v 239 treva zmenit podmienky
+                                grid[p][n] = 3;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < 240; i++) { // rozsirenie hran stien cast 2
+        for(int j = 0; j < 240; j++) {
+            matica = grid[i][j];
+            if(matica == 3){
+                grid[i][j] = 1;
+            }
+        }
+    }
+
+    ofstream rozsirena("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/PerfeknaMapa_poRozsireni.txt");
+    if (rozsirena.is_open()){
+        for (int i = 0; i < 240; i++)
+        {
+            rozsirena << "" << endl;
+            for (int j = 0; j < 240; j++){
+                rozsirena << " " << grid[i][j];
+            }
+        }
+        rozsirena.close();
+    }
+    else cout << "Unable to open file";
+
+    ofstream miss("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/misie.txt");
+    if (miss.is_open()){
+        for (int i = 0; i < 3; i++)
+        {
+            miss << "" << endl;
+            for (int j = 0; j < 240; j++){
+                miss << " " << misie[i][j];
+            }
+        }
+        miss.close();
+    }
+    else cout << "Unable to open file";
+
+    cout << "M = " << M  << endl;
+    cout << "gridx " << (int) (misie[0][M])/5  << endl;
+    cout << "gridy " << (int) (misie[1][M])/5  << endl;
+
+    grid[(int) (misie[0][M])/5][(int) (misie[1][M])/5] = 2; // position of finish
+    int startX = (int) (positionDataStruct.x * 100.0)/5.0; // starting position x in cm
+    int startY = (int) (positionDataStruct.y * 100.0)/5.0; // starting position y in cm
+
+
+    for(int k = 2; !(grid[startX][startY] > 2); k++){ // zaplavovi algoritmus
+
+     //   cout << "grid" << grid[startX][startY] << endl;
+
+        for(int i = 0; i < 240; i++) {
+            for(int j = 0; j < 240; j++) {
+                matica = grid[i][j];
+                if(matica == k){
+                    if((i+1 >= 0 && i+1 < 240) && (j >= 0 && j < 240) && grid[i+1][j] == 0)
+                        grid[i+1][j] = k+1;
+
+                    if((i-1 >= 0 && i-1 < 240) && (j >= 0 && j < 240) && grid[i-1][j] == 0)
+                        grid[i-1][j] = k+1;
+
+                    if((i >= 0 && i < 240) && (j+1 >= 0 && j+1 < 240) && grid[i][j+1] == 0)
+                        grid[i][j+1] = k+1;
+
+                    if((i >= 0 && i < 240) && (j-1 >= 0 && j-1 < 240) && grid[i][j-1] == 0)
+                        grid[i][j-1] = k+1;
+                }                
+            }
+        }
+        if(k >= 240){
+            Run = false;
+            misionPosibility = false;
+        }
+        else{
+            misionPosibility = true;
+        }
+    }
+
+    ofstream mapa("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/PerfeknaMapa.txt");
+    if (mapa.is_open()){
+        for (int i = 0; i < 240; i++)
+        {
+            mapa << "" << endl;
+            for (int j = 0; j < 240; j++){
+                if(grid[i][j] < 10) mapa << "  ";
+                else if(grid[i][j] < 100) mapa << " ";
+                mapa << " " << grid[i][j];
+            }
+        }
+        mapa.close();
+    }
+    else cout << "Unable to open file";
+
+    path[0][0] = startX;
+    path[1][0] = startY;
+    //najst cestu od zaciatku po ciel (mnozina bodov)
+    for(int controled_position = 0, i = startX, j = startY, k = 0, direction = 0; !(controled_position == 2); i = path[0][k], j = path[1][k]) {
+
+        if((i+1 >= 0 && i+1 < 240) && grid[i+1][j] == (grid[i][j]) - 1){ // down
+            if (direction == 1){
+                path[0][k] = i + 1;
+                path[1][k] = j;
+                direction = 1;
+            }
+            else{
+                path[0][k+1] = i + 1;
+                path[1][k+1] = j;
+                direction = 1;
+                k++;
+            }
+
+            controled_position = grid[i+1][j];
+        }
+        else if((j+1 >= 0 && j+1 < 240) && grid[i][j+1] == (grid[i][j]) - 1){ // right
+            if (direction == 2){
+                path[0][k] = i;
+                path[1][k] = j + 1;
+                direction = 2;
+            }
+            else{
+                path[0][k+1] = i;
+                path[1][k+1] = j + 1;
+                direction = 2;
+                k++;
+            }
+
+            controled_position = grid[i][j+1];
+        }
+        else if((i-1 >= 0 && i-1 < 240) && grid[i-1][j] == (grid[i][j]) - 1){ //up
+            if (direction == 3){
+                path[0][k] = i - 1;
+                path[1][k] = j;
+                direction = 3;
+            }
+            else{
+                path[0][k+1] = i - 1;
+                path[1][k+1] = j;
+                direction = 3;
+                k++;
+            }
+
+            controled_position = grid[i-1][j];
+        }
+        else if((j-1 >= 0 && j-1 < 240) && grid[i][j-1] == (grid[i][j]) - 1){ // left
+            if (direction == 4){
+                path[0][k] = i;
+                path[1][k] = j - 1;
+                direction = 4;
+            }
+            else{
+                path[0][k+1] = i;
+                path[1][k+1] = j - 1;
+                direction = 4;
+                k++;
+            }
+
+            controled_position = grid[i][j-1];
+        }
+    }
+
+ ofstream trasa("C:/Users/Lenovo/OneDrive/Dokumenty/HMI/git/Trasa.txt");
+ if (trasa.is_open()){
+     for (int i = 0; i < 2; i++)
+     {
+         trasa << "" << endl;
+         for (int j = 0; j < 240; j++){
+             trasa << " " << path[i][j];
+         }
+     }
+     trasa.close();
+ }
+ else cout << "Unable to open file";
+}
+
+void mapCreator(){
+    for(int i = 0; i < 52; i++){
+        if(mapKoty[i][0] == mapKoty[i+1][0]){//suradnice x
+            int j = 0;
+            if(mapKoty[i][1] > mapKoty[i+1][1]){
+                for(j = mapKoty[i][1]; j > mapKoty[i+1][1]; j--){
+                    grid[(int) (mapKoty[i][0]) / 5][(int) j / 5] = 1;
+                }
+            }
+            else{
+                for(j = mapKoty[i][1]; j < mapKoty[i+1][1]; j++){
+                    grid[(int) (mapKoty[i][0]) / 5][(int) j / 5] = 1;
+                }
+            }
+        }
+        else if(mapKoty[i][1] == mapKoty[i+1][1]){//suradnice y
+            int j = 0;
+            if(mapKoty[i][0] > mapKoty[i+1][0]){
+                for(j = mapKoty[i][0]; j > mapKoty[i+1][0]; j--){
+                    grid[(int) j / 5][(int) (mapKoty[i][1]) / 5] = 1;
+                }
+            }
+            else{
+                for(j = mapKoty[i][0]; j < mapKoty[i+1][0]; j++){
+                    grid[(int) j / 5][(int) (mapKoty[i][1]) / 5] = 1;
+                }
+            }
+        }
+        else{//sikme steny
+            if(i%4 != 0){
+                double Dis = sqrt(pow((mapKoty[i+1][0] - mapKoty[i][0]), 2) + pow((mapKoty[i+1][1] - mapKoty[i][1]), 2));
+                double Ux = (mapKoty[i+1][0] - mapKoty[i][0]) / Dis;
+                double Uy = (mapKoty[i+1][1] - mapKoty[i][1]) / Dis;
+
+                for (int l = 1; (sqrt(pow((((Ux * l) + mapKoty[i][0]) - mapKoty[i][0]), 2) + pow((((Uy * l) + mapKoty[i][1]) - mapKoty[i][1]), 2))) < Dis ; l++){
+                    grid[(int) (((Ux * l) + mapKoty[i][0]) / 5)][(int) (((Uy * l) + mapKoty[i][1]) / 5)] = 1;
+                }
+            }
+        }
+    }
+}
+
+double getTickToMeter(unsigned short previousTick, unsigned short tick) {
+    double tickToMeter = 0.000085292090497737556558;
+    double res = ((double)tick - (double)previousTick);
+    if(res > 5000) {
+        res = (long double)(tick-65536) - (long double)previousTick;
+    } else if(res < -5000) {
+        res = (long double)(tick+65536)- (long double)previousTick;
+    }
+    return tickToMeter * res;
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event){
+    onMouseEvent(event->pos());
+    event->accept();
+    cout << "mousePressEvent" << endl;
+}
+
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *event){
+    onMouseEvent(event->pos());
+    event->accept();
+    cout << "mouseDoubleClickEvent" << endl;
+}
+
+void MainWindow::onMouseEvent(const QPoint &pos){
+    misie[0][misionCount] = pos.x();
+    misie[1][misionCount] = pos.y();
+    misie[2][misionCount] = activeMode;
+    misionCount++;
+    cout << "Pos-x" << pos.x() << endl;
+    cout << "Pos-y" << pos.y() << endl;
+
+    cout << "M = " << M  << endl;
+    cout << "gridx " << (int) (misie[0][M])/5  << endl;
+    cout << "gridy " << (int) (misie[1][M])/5  << endl;
+}
+
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
@@ -700,4 +1145,44 @@ void MainWindow::getNewFrame()
 }
 
 
+
+
+void MainWindow::on_pushButton_mode_clicked()
+{
+    if(activeMode == 1)
+    {
+        activeMode = 2;
+
+        ui->pushButton_mode->setText("Mode uloha");
+    }
+    else if(activeMode == 2)
+    {
+        activeMode = 3;
+
+        ui->pushButton_mode->setText("Mode ciel");
+    }
+    else if(activeMode == 3)
+    {
+        activeMode = 1;
+
+        ui->pushButton_mode->setText("Mode prejazd");
+    }
+}
+
+
+void MainWindow::on_Mision_start_clicked()
+{
+    if(Run==true)
+    {
+        Run=false;
+
+        ui->Mision_start->setText("Mision Start");
+    }
+    else
+    {
+        Run=true;
+
+        ui->Mision_start->setText("Mision Stop");
+    }
+}
 

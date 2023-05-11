@@ -86,3 +86,5 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
+
+QMAKE_CXXFLAGS += -std=gnu++14
