@@ -6,9 +6,6 @@
 #include<iostream>
 #include<opencv2/highgui/highgui.hpp>
 #include<opencv2/imgproc/imgproc.hpp>
-//#include <fstream>
-//#include <stdio.h>
-#include <QTimer>
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -23,47 +20,7 @@ using namespace std;
 bool safety_stop = false;
 bool emergency_stop = false;
 
-short diff_in_left_encounter, diff_in_right_encounter;
-double left_wheel_distance, right_wheel_distance;
-double angle_goal, distance_from_goal;
-double current_angle = 0;
-double current_x = 0, current_y = 0;
-double rotation_speed = 0;
-unsigned short old_left_encounter, old_right_encounter;
-
-int map_size = 100;
-
-
-int created_map[100][100] = {{0}};
-
-int curret_t =0;
-//int created_map[101][101];
-
-
-
-
-//int** generateJointCoords(skeleton skeleJoints, QRect rect)
-//{
-//    int** jointCoords = new int*[2];
-
-//    int axis = 0; //  X
-
-//    for (int joint = left_wrist; joint != last; joint++) {
-//        jointCoords[axis] = new int[73];
-//        jointCoords[axis][joint] = rect.width()-rect.width() * skeleJoints.joints[joint].x+rect.topLeft().x();
-////        cout << jointCoords[axis][joint] << ' ';
-//    }
-
-//    axis = 1; // Y
-
-//    for (int joint = left_wrist; joint != last; joint++) {
-//        jointCoords[axis] = new int[73];
-//        jointCoords[axis][joint] = (rect.height() *skeleJoints.joints[joint].y)+rect.topLeft().y();
-//    }
-
-//    return jointCoords;
-//}
-
+//CKobuki kobuki;
 
 bool isGesture_RightFist(skeleton skeleJoints)
 {
@@ -188,30 +145,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="192.168.1.13";//127.0.0.1//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";//127.0.0.1//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
-  //  timer = new QTimer(this);
-//    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
+
     actIndex=-1;
     useCamera1=false;
 
-//    QTimer *timer = new QTimer(this);
-//    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-//    timer->start(10);
-
     datacounter=0;
-
-
 }
 
 MainWindow::~MainWindow()
 {
-//    for (int i = 0; i < 100; i++) {
-//        delete[] created_map[i];
-//    }
-//    delete[] created_map;
+    //video.release();
 
     delete ui;
 }
@@ -233,36 +180,14 @@ void MainWindow::paintEvent(QPaintEvent *event)
     rect2= ui->frame_2->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect2.translate(0,15);
 
-
-    // vypisi rozmerov grafickeho okna
-//    cout<<"x1 = " << (int) rect.left() << endl;  //defaul is: 11
-//    cout<<"y1 = " << (int) rect.top() << endl;  //defaul is: 128
-//    cout<<"x2 = " << (int) rect.right() << endl;  //defaul is: 803
-//    cout<<"y2 = " << (int) rect.bottom() << endl;  //defaul is: 611
-//    cout<<"----------------------------" << endl;
-//    cout<<"dlzka x = " << (int) rect.right() - rect.left() << endl;  //defaul is: 792
-//    cout<<"dlzka y = " << (int) rect.bottom() - rect.top()<< endl;  //defaul is: 483
-//    cout<<"----------------------------" << endl;
-
-//    for(int x=8 + 11,y=5 + 128;
-//        x <= ((int) rect.right() - 5) &&
-//        y <= ((int) rect.bottom() - 5);
-//        x+=8,y+=5){
-
-//        x2 = x;
-//        y2 = y;
-////        cout<<"x2 = " << x2 << endl;  //defaul is: 803
-////        cout<<"y2 = " << y2 << endl;  //defaul is: 611
-//    }
-
     // main rectangle
-    int x1 = 11;
-    int y1 = 128;
-    int x2 = rect.right();
-    int y2 = rect.bottom();
+    int x1_0 = 11;
+    int y1_0 = 128;
+    int x2_0 = rect.right();
+    int y2_0 = rect.bottom();
 
-    int width = x2 - x1;
-    int height = y2 - y1;
+    int width = x2_0 - x1_0;
+    int height = y2_0 - y1_0;
 
     int width_ratio = width/8;
     int height_ratio = height/5;
@@ -270,24 +195,24 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if(width_ratio > height_ratio)
     {
         width = height_ratio*8;
-        x2 = x1 + width;
+        x2_0 = x1_0 + width;
     }
     else
     {
         height = width_ratio*5;
-        y2 = y1 + height;
+        y2_0 = y1_0 + height;
     }
 
 
-    rect.setCoords(11, 128, x2, y2);
+    rect.setCoords(11, 128, x2_0, y2_0);
 
     painter.drawRect(rect);
 
     // secondary rectangle
-    int x11 = 11, y11 = 128, x22 = rect2.right(), y22 = rect2.bottom();
+    int x1_1 = 11, y1_1 = 128, x2_1 = rect2.right(), y2_1 = rect2.bottom();
 
-    int width2 = x22 - x11;
-    int height2 = y22 - y11;
+    int width2 = x2_1 - x1_1;
+    int height2 = y2_1 - y1_1;
 
     int width_ratio2 = width2/8;
     int height_ratio2 = height2/5;
@@ -295,20 +220,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
     if(width_ratio2 > height_ratio2)
     {
         width2 = height_ratio2*8;
-        x22 = x11 + width2;
+        x2_1 = x1_1 + width2;
     }
     else
     {
         height2 = width_ratio2*5;
-        y22 = y11 + height2;
+        y2_1 = y1_1 + height2;
     }
 
-    rect2.setCoords(11, 128, x22, y22);
+    rect2.setCoords(11, 128, x2_1, y2_1);
 
     painter.drawRect(rect2);
-
-
-
 
 
     cv::Mat clone_frame = frame[actIndex].clone();
@@ -317,8 +239,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
     {
         //cv::Mat clone_frame = cv::Mat::clone(frame[actIndex]);
         cv::Mat clone_frame = frame[actIndex].clone();
-
-//        std::cout<<actIndex<<std::endl;
 
         double f = 681.743;
         double Zd = -14.5;
@@ -349,22 +269,11 @@ void MainWindow::paintEvent(QPaintEvent *event)
             {
                 smallest_D = D;
             }
-            //cout << D << endl;
             if(smallest_D < 30 && !emergency_stop && !safety_stop)
             {
-                //cout << D << endl;
-                //cout << "pushed safety" << endl;
                 on_pushButton_4_clicked();
                 emergency_stop = true;
             }
-
-//            if(emergency_stop && !safety_stop)
-//            {
-//                cv::putText(clone_frame, "   Caution!", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
-//            }
-
-
-
 
             if((360.0-copyOfLaserData.Data[k].scanAngle) < 32.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 0.0 || (360.0-copyOfLaserData.Data[k].scanAngle) <= 360.0 && (360.0-copyOfLaserData.Data[k].scanAngle) > 328.0)
             { // front
@@ -391,7 +300,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, center, 1,line_Color, 2);
             }
-    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 102.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 62.0)//132-32  left
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 132.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 32.0)
             {
                 if(D <= 50){
@@ -416,10 +324,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_left, Size(15, 15), 0, 90.0/*start angle*/, 270.0/*end angle*/, line_Color, 2);
             }
-    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 198.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 162.0)//228-132 back
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 228.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 132.0)
             {
                 if(D <= 50){
@@ -444,10 +350,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_back, Size(15, 15), 0, 0.0/*start angle*/, 180.0/*end angle*/, line_Color, 2);
             }
-    //            else if((360.0-copyOfLaserData.Data[k].scanAngle) < 298.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 258.0)//328-228 right
             else if((360.0-copyOfLaserData.Data[k].scanAngle) < 328.0 && (360.0-copyOfLaserData.Data[k].scanAngle) >= 228.0)
             {
                 if(D <= 50){
@@ -472,7 +376,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 Scalar line_Color(b, g, r);
                 cv::circle(clone_frame, robot_center, 10,robot_Color, 2);
-    //                cv::circle(frame[actIndex], robot_center, 10,line_Color, 2);
                 cv::ellipse(clone_frame, robot_center_right, Size(15, 15), 0, 270.0/*start angle*/, 90.0+360/*end angle*/, line_Color, 2);
             }
         }
@@ -507,28 +410,17 @@ void MainWindow::paintEvent(QPaintEvent *event)
             cv::putText(clone_frame, "", Point(100, 250), 2.0, 3.0, Scalar(0, 0, 255), 3, LINE_8);
         }
 
-
-    //        cout<<"stav baterie 1 = " << (int) robotdata.Battery << endl;
-
-
         QImage image = QImage((uchar*)clone_frame.data, clone_frame.cols, clone_frame.rows, clone_frame.step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
-    }
-    if(useCamera1==true && actIndex>-1){
+
         if(updateLaserPicture==1) ///ak mam nove data z lidaru
         {
             updateLaserPicture=0;
 
             painter.setPen(pero);
             //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
-         //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=-1;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
-
-//                int diag = (sqrt(pow(((int) rect2.right() - (int) rect2.left()), 2) + pow(((int) rect2.bottom() - (int) rect2.top()), 2)));
-//                diag = ((((int) (-diag / 100) * 5) + 100) / 5) + 15;
-//                cout<<"diag = " << diag << endl;
-
                 int dist;
                 int xp;
                 int yp;
@@ -560,6 +452,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
             }
         }
     }
+
     if(updateSkeletonPicture==1 )
     {
         int joint_coords[73][2];
@@ -576,25 +469,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 painter.drawEllipse(QPoint(joint_coords[joint][0], joint_coords[joint][1]),2,2);
         }
 
-
-//        isGesture_LeftFist(skeleJoints);
-//        cout << "___";
-//        isGesture_LeftPalm(skeleJoints);
-//        cout << "___";
-//        isGesture_RightFist(skeleJoints);
-//        cout << "___";
-//        isGesture_RightPalm(skeleJoints);
-//        cout << "___";
-//        isGesture_LeftAboveHead(skeleJoints);
-//        cout << "___";
-//        isGesture_RightAboveHead(skeleJoints);
-//        cout << "    ";
-
-//        if(!isGesture_LeftAboveHead(skeleJoints) && !isGesture_RightAboveHead(skeleJoints))
-//        {
-//            robot.setRotationSpeed(0);
-//            robot.setTranslationSpeed(0);
-//        }
         if(!safety_stop)
         {
             if(isGesture_RightAboveHead(skeleJoints) && isGesture_RightPalm(skeleJoints)) //RIGHT PALM UP -> TURN RIGHT
@@ -650,8 +524,6 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
-    CKobuki kobuki;
-
     ///tu mozete robit s datami z robota
     /// ale nic vypoctovo narocne - to iste vlakno ktore cita data z robota
     ///teraz tu posielam rychlosti na zaklade toho co setne joystick a vypisujeme data z robota(kazdy 5ty krat. ale mozete skusit aj castejsie). vyratajte si polohu. a vypiste spravnu
@@ -664,86 +536,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
     else
         robot.setTranslationSpeed(0);
-
-//    if(datacounter == 0)
-//    {
-//        for(int i = 0;i < 100;i++) {
-//            created_map[i] = new int[100];
-//        }
-
-//        for(int i = 0;i < 100;i++) {
-//            for(int j = 0;j < 100;j++) {
-//                created_map[i][j] = 0;
-//            }
-//        }
-//    }
-
-//    if (datacounter == 0)
-//    {
-//        old_left_encounter = robotdata.EncoderLeft;
-//        old_right_encounter = robotdata.EncoderRight;
-//    }
-//    diff_in_left_encounter = robotdata.EncoderLeft - old_left_encounter;
-//    diff_in_right_encounter = robotdata.EncoderRight - old_right_encounter;
-
-//    left_wheel_distance = kobuki.getTickToMeter() * diff_in_left_encounter;
-//    right_wheel_distance = kobuki.getTickToMeter() * diff_in_right_encounter;
-
-//    double delta_fi = (right_wheel_distance - left_wheel_distance) / kobuki.getWheelbase();
-
-//    double delta_s = (right_wheel_distance + left_wheel_distance) / 2;
-
-//    current_x += delta_s * cos(current_angle + (delta_fi / 2));
-//    current_y += delta_s * sin(current_angle + (delta_fi / 2));
-
-//    current_angle += delta_fi;
-
-//    if (current_angle > PI)
-//        current_angle -= 2 * PI;
-//    if (current_angle <= -PI)
-//        current_angle = current_angle + 2 * PI;
-//    //datacounter++;
-
-//    old_left_encounter = robotdata.EncoderLeft;
-//    old_right_encounter = robotdata.EncoderRight;
-
-//    if(curret_t % 5 == 0)
-//    {
-//        created_map[50 + int(current_x*10)][50 - int(current_y*10)] = curret_t/5;
-//    }
-
-//    //cout << "testing -------- "<< "x:" << current_x << "y:" << current_y << endl;
-
-//    int u, v;
-//    ofstream fp("D:/STU_PROGRAMS/Documents/HMI/map.txt");
-//    if(fp.is_open())
-//    {
-//        for (u = 0; u < 100; u++)
-//        {
-//            fp << endl;
-//            for (v = 0; v < 100; v++)
-//            {
-//                if (created_map[v][u] == 0)
-//                {
-//                    fp << "__ ";
-//                }
-//                else
-//                {
-//                    fp << created_map[v][u]<<' ';
-//                }
-//            }
-//        }
-//    }
-
-
-//        cout << "x:" << current_x << "y:" << current_y << endl;
-    //cout << angle_at_left_wrist << endl;
-
-//    if(angle_at_left_wrist >= 45)
-//    {
-//        cout << "Forward" << angle_at_left_wrist << endl;
-//        robot.setTranslationSpeed(500);
-//    }
 
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
@@ -791,7 +583,6 @@ int MainWindow::processThisLidar(LaserMeasurement laserData)
 /// vola sa ked dojdu nove data z kamery
 int MainWindow::processThisCamera(cv::Mat cameraData)
 {
-
     cameraData.copyTo(frame[(actIndex+1)%3]);//kopirujem do nasej strukury
     actIndex=(actIndex+1)%3;//aktualizujem kde je nova fotka
     updateLaserPicture=1;
@@ -821,7 +612,7 @@ void MainWindow::on_pushButton_9_clicked() //start button
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
     //---simulator ma port 8889, realny robot 8000
-    robot.setCameraParameters("http://"+ipaddress+":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://"+ipaddress+":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     robot.setSkeletonParameters("127.0.0.1",23432,23432,std::bind(&MainWindow::processThisSkeleton,this,std::placeholders::_1));
     ///ked je vsetko nasetovane tak to tento prikaz spusti (ak nieco nieje setnute,tak to normalne nenastavi.cize ak napr nechcete kameru,vklude vsetky info o nej vymazte)
     robot.robotStart();
@@ -840,30 +631,13 @@ void MainWindow::on_pushButton_9_clicked() //start button
             if(/*js==0 &&*/ axis==0){rotationspeed=-value*(3.14159/2.0);}}
     );
 }
-void MainWindow::on_pushButton_2_clicked() //forward
+void MainWindow::on_pushButton_2_clicked() //draw
 {
     //pohyb dopredu
-    robot.setTranslationSpeed(500);
-
+    //robot.setTranslationSpeed(500);
+    updateMapPicture = 1;
 }
 
-void MainWindow::on_pushButton_3_clicked() //back
-{
-    robot.setTranslationSpeed(-250);
-
-}
-
-void MainWindow::on_pushButton_6_clicked() //left
-{
-robot.setRotationSpeed(3.14159/2);
-
-}
-
-void MainWindow::on_pushButton_5_clicked()//right
-{
-robot.setRotationSpeed(-3.14159/2);
-
-}
 
 void MainWindow::on_pushButton_4_clicked() //stop
 {
@@ -904,10 +678,3 @@ void MainWindow::getNewFrame()
 {
 
 }
-
-//void MainWindow::update()
-//{
-//    //cout << curret_t;
-//    curret_t++;
-//}
-
